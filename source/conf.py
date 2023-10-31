@@ -17,12 +17,12 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Courtois NeuroMod'
-copyright = '2022, Courtois NeuroMod team'
-author = 'Courtois NeuroMod team'
+project = 'C-PIP'
+copyright = '2023, C-PIP team'
+author = 'C-PIP team'
 
 # The full version, including alpha/beta/rc tags
-release = '2020-beta'
+release = '2023-beta'
 master_doc = 'index'
 
 # -- General configuration ---------------------------------------------------
@@ -52,13 +52,13 @@ exclude_patterns = []
 html_theme = 'sphinx_rtd_theme'
 
 # tab name
-html_short_title = 'CNeuroMod'
+html_short_title = 'CPIP'
 
 # The logo
-html_logo = 'img/logo_neuromod_black.png'
+html_logo = ''
 
 # icon
-html_favicon = 'img/logo_neuromod_small.png'
+html_favicon = ''
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
