@@ -12,7 +12,6 @@ The functional data was preprocessed using the [fMRIprep pipeline](https://fmrip
 Note that the `slicetiming` option was disabled (i.e. fMRIprep was invoked with the flag `--ignore slicetiming`).
 
 ### Outputs
-The outputs of fMRIprep can be found as sub-datasets of the [cneuromod.processed](https://github.com/courtois-neuromod/cneuromod.processed) super-dataset.
 fMRIPrep functional preprocessing was run using the anatomical "fast-track" (flag `--anat-derivatives`) with sMRIPrep output described above, so as to use the same anatomical basis for all functional dataset.
 The output was generated in `T1w`, `MNI152NLin2009cAsym` and `fsLR-den-91k` spaces as defined by [templateflow](https://www.templateflow.org/) to respectively enable native space and volumetric or surface-based analyses.
 
