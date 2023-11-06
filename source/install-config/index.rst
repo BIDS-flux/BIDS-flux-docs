@@ -15,8 +15,6 @@ This section provides detailed information on the installation and configuration
    software-environment/index
    user-accounts-permissions/index
    network-configuration/index
-   hostname-dns-configuration/index
-   scripts-automation/index
 
 If you have any questions or need assistance, feel free to [link to contact information or support].
 

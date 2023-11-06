@@ -3,7 +3,7 @@
 Overview
 ========
 
-Welcome to the documentation for the [Your Project Name] project. This documentation provides an in-depth guide to [brief description of your project].
+Welcome to the documentation for the C-PIP project. This documentation provides an in-depth guide to [brief description of your project].
 
 Please use the navigation on the left to explore various aspects of the project:
 
