@@ -1,6 +1,6 @@
 .. _mri-equipment-index:
 
-Mri Equipment
+MRI Equipment
 =============
 
 This section provides information on mri equipment for the [Your Project Name] project.
