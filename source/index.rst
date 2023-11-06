@@ -3,7 +3,7 @@
 .. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: 🪄 Project Overview
+   :caption: 🪄 Docs
 
    Introduction to the project <overview/index>
    Installation and Configuration <install-config/index>
