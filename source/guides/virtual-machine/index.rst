@@ -19,12 +19,12 @@ The system requirements will depend on how many processes you plan to run. For r
 Therefore a minimal setup processing 3-5 subjects at a time would require 5 vCPU and about 20 GB of RAM. This is just to run the gitlab runners. Storage space should accomodate the neuroimaging dataset. For example, the raw data for one of our studies takes up XGB space and we need additional space for the processed derivative images. 
 
 
-⏩️ :doc:`Hardware requirements </guides/virtual-machine/hardware>`
-    Description of the hardware requirements for running the virtual machine(s).
+⏩️ :doc:`Hardware requirements </guides/virtual-machine/configuration>`
+    Description of the hardware and software requirements for running the virtual machine(s).
 
 
 .. toctree::
    :maxdepth: 1
    :hidden:
 
-   Setting up your Gitlab instance on server </guides/gitlab/self-hosted>
+   Virtual machine configuration </guides/virtual-machine/configuration>

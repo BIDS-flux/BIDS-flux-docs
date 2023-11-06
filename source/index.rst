@@ -2,7 +2,7 @@
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
+   :caption: Info
 
    DATASETS
    ACCESS
@@ -18,8 +18,8 @@
    :hidden:
    :caption: 🪄 How-to guides
 
-   Project setup and configuration </guides/gitlab/index>
-   Virtual machine specifications and setup </guides/virtual-machine/index>
+   Gitlab pipeline configuration </guides/gitlab/index>
+   Virtual machine installation </guides/virtual-machine/index>
 
 
 
