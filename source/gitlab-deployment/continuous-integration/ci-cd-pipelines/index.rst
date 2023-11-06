@@ -1,9 +1,9 @@
 .. _ci-cd-pipelines-index:
 
-Ci Cd Pipelines
+CI/CD Pipelines
 ===============
 
-This section provides information on ci cd pipelines for the [Your Project Name] project.
+This section provides information on continuous integration/development pipelines.
 
 .. toctree::
    :maxdepth: 2
