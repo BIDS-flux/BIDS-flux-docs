@@ -16,7 +16,6 @@ This section provides information on the deployment of the GitLab pipeline in th
    using-datalad/index
    managing-git-repositories/index
    preprocessing-automation/index
-   pipeline-configuration/index
    workflow-description/index
    version-control-best-practices/index
    commit-messages/index
