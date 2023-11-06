@@ -1,6 +1,6 @@
 .. _mri-protocols-index:
 
-Mri Protocols
+MRI Protocols
 =============
 
 This section provides information on mri protocols for the [Your Project Name] project.
