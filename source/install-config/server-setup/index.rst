@@ -6,10 +6,9 @@ Server Setup
 This section provides information on setting up servers for the [Your Project Name] project.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   subsection1/index
-   subsection2/index
+   vm-config
    # Add more subsections as needed
 
 If you have any questions or need assistance, feel free to [link to contact information or support].
