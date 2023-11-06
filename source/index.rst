@@ -1,25 +1,14 @@
 .. include:: OVERVIEW.rst
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Info
-
-   DATASETS
-   ACCESS
-   MRI
-   DERIVATIVES
-   RELEASES
-   COC
-   AUTHORS
-   ACKNOWLEDGMENT
-
-.. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: 🪄 How-to guides
+   :caption: 🪄 Project Overview
 
-   Gitlab pipeline configuration </guides/gitlab/index>
-   Virtual machine installation </guides/virtual-machine/index>
-
-
-
+   Introduction to the project <overview/index>
+   Installation and Configuration <install-config/index>
+   MRI Scanning <mri-scanning/index>
+   GitLab Pipeline Deployment <gitlab-deployment/index>
+   Documentation <documentation/index>
+   Appendices <appendices/index>
+   Project Updates <project-updates/index>
