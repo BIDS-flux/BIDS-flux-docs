@@ -8,7 +8,11 @@
    ACCESS
    MRI
    DERIVATIVES
-
+   RELEASES
+   COC
+   AUTHORS
+   ACKNOWLEDGMENT
+   
 .. toctree::
    :maxdepth: 2
    :hidden:
@@ -23,7 +27,4 @@
    Best practice </guides/best-practice/index>
    Troubleshooting problems </guides/troubleshooting/index>
 
-   RELEASES
-   COC
-   AUTHORS
-   ACKNOWLEDGMENT
+
