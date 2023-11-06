@@ -8,15 +8,10 @@ Welcome to the documentation for the C-PIP project. This documentation provides 
 Please use the navigation on the left to explore various aspects of the project:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   intro/index
-   install-config/index
-   mri-scanning/index
-   gitlab-deployment/index
-   documentation/index
-   appendices/index
-   project-updates/index
+   intro
+   objectives   
 
 If you have any questions or need assistance, feel free to [link to contact information or support].
 
