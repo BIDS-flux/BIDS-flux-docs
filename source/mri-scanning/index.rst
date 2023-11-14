@@ -9,18 +9,17 @@ This section covers various aspects of MRI scanning and data acquisition for the
    :maxdepth: 2
 
    mri-equipment/index
-   types-of-mri-scanners/index
    mri-protocols/index
    acquisition-types/index
    scanning-parameters/index
    data-acquisition-and-storage/index
-   dicom-format/index
    data-management/index
    quality-control/index
    scanner-calibration/index
    mri-data-preprocessing/index
    data-conversion/index
-   dicom-header-information/index
+   datasets/index
+   derivatives/index
 
 If you have any questions or need assistance, feel free to [link to contact information or support].
 
