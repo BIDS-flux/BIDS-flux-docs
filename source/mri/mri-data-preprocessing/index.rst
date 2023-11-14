@@ -1,9 +1,9 @@
 .. _mri-data-preprocessing-index:
 
-Mri Data Preprocessing
+MRI Data Preprocessing
 ======================
 
-This section provides information on mri data preprocessing for the [Your Project Name] project.
+This section provides information on mri data preprocessing for the C-PIP project.
 
 .. toctree::
    :maxdepth: 2
