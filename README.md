@@ -1,6 +1,6 @@
 # C-PIP documentation
 
-Forked from:
+## Forked from:
 
 [![Documentation Status](https://readthedocs.org/projects/courtois-neuromod-docs/badge/?version=latest)](https://docs.cneuromod.ca/en/latest/?badge=latest)
 
