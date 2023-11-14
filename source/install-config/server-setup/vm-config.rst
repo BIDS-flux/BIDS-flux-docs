@@ -1,7 +1,7 @@
 Montreal Virtual Machine Configuration
 =====================================
 
-.. figure:: path/to/your/figure.png
+.. figure:: ../../_static/infographics/Visio-C-PIP Deployment - Logical - v1.0.pdf
    :name: fig-deployment-logical
 
    Logical Deployment Diagram
