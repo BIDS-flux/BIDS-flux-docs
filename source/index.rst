@@ -8,6 +8,7 @@
    Introduction to the project <overview/index>
    Installation and Configuration <install-config/index>
    MRI <mri/index>
+   Heterogeneous Data <heterogeneous-data/index>
    GitLab Pipeline Deployment <gitlab-deployment/index>
    Documentation <documentation/index>
    Appendices <appendices/index>
