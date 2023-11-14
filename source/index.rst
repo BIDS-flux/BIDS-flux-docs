@@ -7,8 +7,10 @@
 
    Introduction to the project <overview/index>
    Installation and Configuration <install-config/index>
-   MRI Scanning <mri-scanning/index>
+   MRI <mri/index>
    GitLab Pipeline Deployment <gitlab-deployment/index>
    Documentation <documentation/index>
    Appendices <appendices/index>
    Project Updates <project-updates/index>
+
+
