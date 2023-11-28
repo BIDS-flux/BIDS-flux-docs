@@ -9,9 +9,12 @@ This section provides information on setting up servers for the [Your Project Na
    :maxdepth: 1
 
    vm-config
+   vm-config-calgary
    # Add more subsections as needed
 
 If you have any questions or need assistance, feel free to [link to contact information or support].
+
+
 
 .. note::
 
