@@ -11,9 +11,10 @@ Self-hosted Gitlab
 
 `Follow this installation guide for installing gitlab in centos/redhat 8, it also works for redhat 9. <https://about.gitlab.com/install/#centos-7>`_ It is imporant to make the following considerations when following the steps.
 
-#. Disable user creation to avoid undesired users `follow these instructions. <https://computingforgeeks.com/disable-user-signup-on-gitlab-welcome-page/>`_
+#. **Disable user creation to avoid undesired users** `follow these instructions. <https://computingforgeeks.com/disable-user-signup-on-gitlab-welcome-page/>`_
 
-#. Secure GitLab Server with self-signed certificates
+#. **Secure GitLab Server with self-signed certificates.**
+
    .. creationofssl:
 
    #. Create a self-signed certificate. `Click here for the creation of a self signed SSL certificate on centos or redhat. <https://jfrog.com/help/r/general-what-should-i-do-if-i-get-an-x509-certificate-relies-on-legacy-common-name-field-error/a-new-valid-certificate-needs-to-be-created-to-include-the-subjectaltname-property-and-should-be-added-directly-when-creating-an-ssl-self-signed-certificate-using-openssl-command-by-specifying-an-addext-flag.-for-instance>`_ 
@@ -32,7 +33,7 @@ Self-hosted Gitlab
 
    #. Follow these `instructions 1 <https://docs.gitlab.com/omnibus/settings/ssl/index.html>`_ or `instructions 2 <https://computingforgeeks.com/how-to-secure-gitlab-server-with-ssl-certificate/?expand_article=1>`_ and reconfigure gitlab to accept self-signed certificates.
 
-#. Enable a container registry with the same self-signed certificate.
+#. **Enable a container registry with the same self-signed certificate.**
 
    #. You can use the same certificate which means that your registry will be deployed on the same domain name but with a different port. For instance: cpip.ahs.ucalgary.ca:5050.
 
@@ -72,6 +73,6 @@ Self-hosted Gitlab
             update-ca-trust
 
       
-   #. Gitlab runner with docker 
+   #. **Installation of GitLab using docker.**
    
-   Create a gitlab-runner container using the calgary servers repository.
+   The installation of pretty much everything is possible using Docker. All you need to do is follow their `installation guide <https://docs.gitlab.com/ee/install/docker.html#install-gitlab-using-docker-compose>`_ using docker compose. I was not able to make this work on Calgary's servers using RedHat.
