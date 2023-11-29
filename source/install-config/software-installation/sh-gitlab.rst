@@ -1,22 +1,17 @@
-Self-hosted GitLab
+Self-hosted GitLab Setup
 =============================
 
-Instalation Calgary
+Calgary
 +++++++++++++++++++
 
-.. .. figure:: ../../_static/infographics/Visio-C-PIP Deployment - Logical - v1.0.pdf
-..    :name: fig-deployment-logical
+Installation
+~~~~~~~~~~~~~
 
-.. .. figure:: ../../_static/infographics/cpip-diagram2.png
-..    :width: 600px
-
-   .. Logical Deployment Diagram
-
-`Follow this installation guide for installing gitlab in centos/redhat 8, it also works for redhat 9. <https://about.gitlab.com/install/#centos-7>`_ It is imporant to make the following considerations when following the steps.
-
-#. **Disable user creation to avoid undesired users** `follow these instructions. <https://computingforgeeks.com/disable-user-signup-on-gitlab-welcome-page/>`_
+We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`_ for installing gitlab in centos/redhat 8, it also works for redhat 9. It is imporant to make the following considerations when following the steps.
 
 .. _creationofssl:
+
+#. **Disable user creation to avoid undesired users** `follow these instructions. <https://computingforgeeks.com/disable-user-signup-on-gitlab-welcome-page/>`_
 
 #. **Secure GitLab Server with self-signed certificates.**
 
@@ -79,3 +74,54 @@ Instalation Calgary
    #. **Installation of GitLab using docker.**
    
    The installation of pretty much everything is possible using Docker. All you need to do is follow their `installation guide <https://docs.gitlab.com/ee/install/docker.html#install-gitlab-using-docker-compose>`_ using docker compose. I was not able to make this work on Calgary's servers using RedHat.
+
+Configuration
+~~~~~~~~~~~~~
+
+After installation there are additional configurations required before the pipeline is ready to pocess images.
+
+#. First, install `gitlab-runner <gitlab-runner-setup>` following the tutorials, and create the minimal number of instance-wide (can be accessed by jobs triggered from any repository, even if created after the creation of the runners) runners required.
+
+#. Create an empty new project called ni-dataops.
+
+#. Clone the `ni-dataops repository https://gitlab.com/cal_cpip/ni-dataops.git <https://gitlab.com/cal_cpip/ni-dataops.git>`_ and push upstream to you self-hosted gitlab. Access (token-access) to this repository should be allowed from other repositories, this will permit newly created repositories containing data to access the processing pipelines.
+
+   .. note:: 
+
+      This can be done in the CI/CD settings of the project
+
+   .. code-block:: bash
+
+      git clone https://gitlab.com/cal_cpip/ni-dataops.git
+      cd ni-dataops
+      git remote add <name-of-remote> <url-of-self-hosted-gitlab-project, for instance https://cpip.ahs.ucalgary.ca/ni-dataops.git>
+      git push -u <name-of-remote> main
+
+   .. note::
+
+      Check branch permissions to make sure you can push up to it.
+
+#. Create some users which will be necessary to run some of the task like DICOM to BIDS conversion, processing, etc.
+
+   a. bids_bot
+   b. dicom_bot = Admin level because its token need to have elevated privileges to use with the GitLab API.
+
+#. ``Install MinIO`` in you data server following :ref:`this guide <minio>`.
+
+#. Some instance-wide variables need to be setup in order for CI/CD pipelines to use then even when new repositores are added after.
+
+   .. note:: 
+
+      To do this you need login into the self-hosted GitLab's admin area. There, you will need to navigate to the settings > CI/CD > Variables
+   
+   a. BIDS_API_TOKEN = access token for the bids_bot
+
+   b. BOT_SSH_KEY = this key is generated from the gitlab-runner from the ``bids runner``
+
+   c. GIT_BOT_USERNAME = bids_bot
+
+   d. GIT_BOT_EMAIL = bids_bot@ahs.ucalgary.ca
+
+   e. S3_SECRET = S3 password
+
+   f. SSH_KNOWN_HOSTS = created copying the output of ssh-keyscan <IP of your self-hosted gitlab> into the value of the variable.
