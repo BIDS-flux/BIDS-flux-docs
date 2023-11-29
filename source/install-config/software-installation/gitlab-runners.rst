@@ -1,14 +1,7 @@
-GitLab Runners
+.. _gitlab-runner-setup:
+
+GitLab Runners Setup
 =============================
-
-.. .. figure:: ../../_static/infographics/Visio-C-PIP Deployment - Logical - v1.0.pdf
-..    :name: fig-deployment-logical
-
-.. .. figure:: ../../_static/infographics/cpip-diagram2.png
-..    :width: 600px
-
-   .. Logical Deployment Diagram
-
 
 Calgary
 +++++++
