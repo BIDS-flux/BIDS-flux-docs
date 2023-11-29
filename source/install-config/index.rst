@@ -9,6 +9,7 @@ This section provides detailed information on the installation and configuration
    :maxdepth: 2
 
    server-setup/index
+   software-installation/index
    networking/index
    security-configuration/index
    backup-restore/index

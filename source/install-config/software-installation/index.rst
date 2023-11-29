@@ -1,17 +1,19 @@
-.. _server-setup-index:
+.. _software-installation-index:
 
-Server Setup
-============
+Sofware Installation:
+----------------------------------
 
-This section provides information on setting up servers for the [Your Project Name] project.
+The setup of the C-PIP pipeline at the independent sites will require slightly different installations for the required tools.
+
+.. Self-hosted Gitlab
+.. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. toctree::
    :maxdepth: 1
 
-   vm-config
-   vm-config-calgary
+   sh-gitlab
    # Add more subsections as needed
-
+   
 .. note::
 
    Explore the subsections listed above for detailed information on server setup.
