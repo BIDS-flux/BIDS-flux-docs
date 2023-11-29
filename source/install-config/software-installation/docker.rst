@@ -1,4 +1,4 @@
-.. _dockerinstall::
+.. _dockerinstall:
 
 Docker Installation
 =============================
