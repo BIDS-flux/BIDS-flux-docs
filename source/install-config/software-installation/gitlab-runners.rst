@@ -19,7 +19,7 @@ Either clone the repository: `https://gitlab.com/cal_cpip/calgary-servers.git <h
 
 .. code-block:: bash
 
-   sudo docker compose -f calgary-servers/sequoia/docker-compose_storescp_dev.yml up
+   sudo docker compose -f calgary-servers/sequoia/docker-compose.gitlab-runner_dev.yml up
 
 Or follow these outlined steps:
 
