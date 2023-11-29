@@ -1,6 +1,6 @@
 .. _software-installation-index:
 
-Sofware Installation:
+Sofware Installation
 ----------------------------------
 
 The setup of the C-PIP pipeline at the independent sites will require slightly different installations for the required tools.
