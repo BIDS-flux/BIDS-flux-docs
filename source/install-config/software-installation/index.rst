@@ -11,7 +11,10 @@ The setup of the C-PIP pipeline at the independent sites will require slightly d
 .. toctree::
    :maxdepth: 1
 
+   docker
    sh-gitlab
+   gitlab-runners
+   storescp
    # Add more subsections as needed
    
 .. note::
