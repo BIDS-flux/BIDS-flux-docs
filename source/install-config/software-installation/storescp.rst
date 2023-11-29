@@ -1,6 +1,6 @@
 .. _storescp:
 
-StoreSCP Using Docker
+StoreSCP Using Docker Setup
 =============================
 
 Calgary
