@@ -122,6 +122,6 @@ After installation there are additional configurations required before the pipel
 
    d. GIT_BOT_EMAIL = bids_bot@ahs.ucalgary.ca
 
-   e. S3_SECRET = S3 password
+   e. S3_SECRET = S3 password set in the :ref:`minio installation <minio>`
 
    f. SSH_KNOWN_HOSTS = created copying the output of ssh-keyscan <IP of your self-hosted gitlab> into the value of the variable.
