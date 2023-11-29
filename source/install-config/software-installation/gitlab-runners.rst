@@ -15,6 +15,14 @@ Calgary
 
 For Calgary we will use a docker compose file living in a repository to install GitLab runner. 
 
+Either clone the repository: `https://gitlab.com/cal_cpip/calgary-servers.git <https://gitlab.com/cal_cpip/calgary-servers.git>`_ and run the following command:
+
+.. code-block:: bash
+
+   sudo docker compose -f calgary-servers/sequoia/docker-compose_storescp_dev.yml up
+
+Or follow these outlined steps:
+
 #. First create a folder with a Dockerfile like the following inside a folder you can call gitlab-runner.
 
    .. code-block:: bash
@@ -57,6 +65,12 @@ For Calgary we will use a docker compose file living in a repository to install 
             - ./gitlab-runner/config:/etc/gitlab-runner/
             - /var/run/docker.sock:/var/run/docker.sock
 
+#. Run this command to spin up the gitlab-runner container.
+
+.. code-block:: bash
+
+   sudo docker compose -f docker-compose.yml up
+
 #. Follow `this documentation <https://docs.gitlab.com/runner/configuration/tls-self-signed.html>`_ to make sure that your gitlab runner can trust your self signed certificate.
 
 #. To create this runners, you will need to first go into your gitlab instance interface **as an admin**. Navigate to the ``admin area navigate into CI/CD>runners>new instance runner`` and follow the steps util you get the token required to register your runner.   
@@ -77,7 +91,7 @@ For Calgary we will use a docker compose file living in a repository to install 
 
    .. note::
 
-      ``"/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro"`` and ``"/mnt/data/mri:/data/"`` are mounting the mri data and ria-dicoms archive from the system where the :ref:`storescp <storescp>` container is saving the dicom sessions.
+      ``"/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro"`` and ``"/mnt/data/mri:/data/"`` are mounting the mri data and ria-dicoms archive from the system where the :ref:`StoreSCP <storescp>` container is saving the dicom sessions.
 
 #. At least 3 different runners need to be created as instance-wide runners.
 
