@@ -1,5 +1,8 @@
-Self-hosted Gitlab
+Self-hosted GitLab
 =============================
+
+Instalation Calgary
++++++++++++++++++++
 
 .. .. figure:: ../../_static/infographics/Visio-C-PIP Deployment - Logical - v1.0.pdf
 ..    :name: fig-deployment-logical
