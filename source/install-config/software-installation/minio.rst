@@ -8,7 +8,7 @@ Calgary
 
 You can find the installation guides for the different operating systems in this `documentation <https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html#minio-snsd>`_.
 
-#. Calgary is working with RedHat8 so I will use the following installation package:
+#. Calgary is working with RedHat8 so I will use the following `installation <https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html#minio-snsd>`_ package:
 
     .. code-block:: bash
 
