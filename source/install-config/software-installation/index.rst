@@ -14,6 +14,7 @@ The setup of the C-PIP pipeline at the independent sites will require slightly d
    docker
    sh-gitlab
    gitlab-runners
+   minio
    storescp
    # Add more subsections as needed
    
