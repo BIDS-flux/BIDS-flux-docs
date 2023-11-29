@@ -11,7 +11,8 @@ Please use the navigation on the left to explore various aspects of the project:
    :maxdepth: 1
 
    intro
-   objectives   
+   objectives
+   glossary   
 
 If you have any questions or need assistance, feel free to [link to contact information or support].
 
