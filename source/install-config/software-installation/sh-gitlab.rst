@@ -16,9 +16,9 @@ Instalation Calgary
 
 #. **Disable user creation to avoid undesired users** `follow these instructions. <https://computingforgeeks.com/disable-user-signup-on-gitlab-welcome-page/>`_
 
-#. **Secure GitLab Server with self-signed certificates.**
+.. _creationofssl:
 
-   .. creationofssl:
+#. **Secure GitLab Server with self-signed certificates.**
 
    #. Create a self-signed certificate. `Click here for the creation of a self signed SSL certificate on centos or redhat. <https://jfrog.com/help/r/general-what-should-i-do-if-i-get-an-x509-certificate-relies-on-legacy-common-name-field-error/a-new-valid-certificate-needs-to-be-created-to-include-the-subjectaltname-property-and-should-be-added-directly-when-creating-an-ssl-self-signed-certificate-using-openssl-command-by-specifying-an-addext-flag.-for-instance>`_ 
 
