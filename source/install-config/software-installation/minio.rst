@@ -8,18 +8,18 @@ Calgary
 
 You can find the installation guides for the different operating systems in this `documentation <https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html#minio-snsd>`_.
 
-#. Calgary is working with RedHat8 so I will use the following `installation <https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html#minio-snsd>`_ package:
+#. Calgary is working with RedHat8, therefore, we will use the following `installation <https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html#minio-snsd>`_ package:
 
     .. code-block:: bash
 
         wget https://dl.min.io/server/minio/release/linux-amd64/archive/minio-20231016041343.0.0.x86_64.rpm -O minio.rpm
         sudo dnf install minio.rpm
 
-    Other considerations to make include the follwoing:
+    Other considerations required include the follwoing:
 
-    #. Create the Systemd Sevice File followig `this <https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html#minio-snsd>`_ steps.
+    #. Create the Systemd Sevice File followig `this steps <https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html#minio-snsd>`_.
 
-        .. code-block:: toml
+        .. code-block:: text
 
             [Unit]
             Description=MinIO
@@ -109,7 +109,7 @@ You can find the installation guides for the different operating systems in this
             #COPY INTO THE CERTS/CAs/ FOLDER BECAUSE WE ARE GOING FOR SELF SIGNED CERTIFICATES
             cp ~/.minio/certs/private.key ~/.minio/certs/CAs/myCA.crt
 
-    #. After creating the certificates, create an environment variable file at /etc/default/minio
+    #. After creating the certificates, create an environment variable file at /etc/default/minio.
 
         .. code-block:: bash
 
@@ -137,8 +137,9 @@ You can find the installation guides for the different operating systems in this
 
     #. Done. You can either access the minio console using the ip shown when you run journalctl -f -u minio.service or use ce MinIO client in order create an alias. This alias will allow you to perform admin tasks directly from the tool.
 
-        .. code-block:: 
+        .. code-block:: bash
 
+            # this line will create an alias (cpip-minio-calgary) for our MinIO instance which will be used to manage it
             mc alias set cpip-minio-calgary https://minio.ahs.ucalgary.ca:9000 cpip-minio cpip-minio-has-access
 
     #. Creation and managing of users.
