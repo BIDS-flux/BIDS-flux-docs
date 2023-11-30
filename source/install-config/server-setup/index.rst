@@ -8,8 +8,7 @@ This section provides information on setting up servers for the [Your Project Na
 .. toctree::
    :maxdepth: 1
 
-   vm-config
-   vm-config-calgary
+   vm-config   
    # Add more subsections as needed
 
 .. note::
