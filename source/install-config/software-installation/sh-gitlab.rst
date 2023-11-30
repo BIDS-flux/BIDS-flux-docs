@@ -49,36 +49,36 @@ We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`
 
          a. First to docker: follow the steps suggested in `this post <https://forum.gitlab.com/t/cannot-login-docker-with-self-signed-certificate/81488>`_.
 
-         b. Copy the cerficate you created in :ref:`Create a self-signed certificate <creationofssl>` into the /etc/docker/daemon.json file, create if it does not exist.
+            a. Copy the cerficate you created in :ref:`Create a self-signed certificate <creationofssl>` into the /etc/docker/daemon.json file, create if it does not exist.
 
-         .. code-block:: bash
+               .. code-block:: bash
 
-            sudo cp /etc/gitlab/ssl/cpip.ahs.ucalgary.ca.crt /etc/docker/cert.d/cpip.ahs.ucalgary.ca:5050/ca.crt
+                  sudo cp /etc/gitlab/ssl/cpip.ahs.ucalgary.ca.crt /etc/docker/cert.d/cpip.ahs.ucalgary.ca:5050/ca.crt
 
-         c. Add the hostnames to the insecure registries json file in /etc/docker/daemon.json. I added both with and without port but I am almost positive you only need the cpip.ahs.ucalgary.ca:5050
+            b. Add the hostnames to the insecure registries json file in /etc/docker/daemon.json. I added both with and without port but I am almost positive you only need the cpip.ahs.ucalgary.ca:5050
 
-         .. code-block:: json
+               .. code-block:: json
 
-            {
-            "insecure-registries" : [ "cpip.ahs.ucalgary.ca","cpip.ahs.ucalgary.ca:5050" ]
-            }
+                  {
+                  "insecure-registries" : [ "cpip.ahs.ucalgary.ca","cpip.ahs.ucalgary.ca:5050" ]
+                  }
 
-         d. You also need to make sure that your system trusts the created certificate by following `these instructions <https://docs.docker.com/registry/insecure/#use-self-signed-certificates>`_.
+         b. You also need to make sure that your system trusts the created certificate by following `these instructions <https://docs.docker.com/registry/insecure/#use-self-signed-certificates>`_.
 
-         .. code-block:: bash
+            .. code-block:: bash
 
-            cp /etc/gitlab/ssl/cpip.ahs.ucalgary.ca.crt /etc/pki/ca-trust/source/anchors/cpip.ahs.ucalgary.ca.crt
-            update-ca-trust
+               cp /etc/gitlab/ssl/cpip.ahs.ucalgary.ca.crt /etc/pki/ca-trust/source/anchors/cpip.ahs.ucalgary.ca.crt
+               update-ca-trust
 
       
    #. **Installation of GitLab using docker.**
    
-   The installation of pretty much everything is possible using Docker. All you need to do is follow their `installation guide <https://docs.gitlab.com/ee/install/docker.html#install-gitlab-using-docker-compose>`_ using docker compose. I was not able to make this work on Calgary's servers using RedHat.
+   The installation of pretty much anything is possible using Docker. All you need to do is follow their `installation guide <https://docs.gitlab.com/ee/install/docker.html#install-gitlab-using-docker-compose>`_ using docker compose. I was not able to make this work on Calgary's servers using RedHat.
 
 Configuration
 ~~~~~~~~~~~~~
 
-After installation there are additional configurations required before the pipeline is ready to pocess images.
+After installation, there are additional configurations required before the pipeline is ready to pocess images.
 
 #. First, install `gitlab-runner <gitlab-runner-setup>` following the tutorials, and create the minimal number of instance-wide (can be accessed by jobs triggered from any repository, even if created after the creation of the runners) runners required.
 
@@ -88,7 +88,7 @@ After installation there are additional configurations required before the pipel
 
    .. note:: 
 
-      This can be done in the CI/CD settings of the project
+      This can be done in the CI/CD settings of the gitlab project in the interface.
 
    .. code-block:: bash
 
@@ -112,7 +112,7 @@ After installation there are additional configurations required before the pipel
 
    .. note:: 
 
-      To do this you need login into the self-hosted GitLab's admin area. There, you will need to navigate to the settings > CI/CD > Variables
+      To do this you need login into the self-hosted GitLab's admin area. There, you will need to navigate to the settings > CI/CD > Variables.
    
    a. BIDS_API_TOKEN = access token for the bids_bot
 
