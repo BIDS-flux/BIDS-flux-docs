@@ -60,9 +60,9 @@ Or follow these outlined steps:
 
 #. Run this command to spin up the gitlab-runner container.
 
-.. code-block:: bash
+   .. code-block:: bash
 
-   sudo docker compose -f docker-compose.yml up
+      sudo docker compose -f docker-compose.yml up
 
 #. Follow `this documentation <https://docs.gitlab.com/runner/configuration/tls-self-signed.html>`_ to make sure that your gitlab runner can trust your self signed certificate.
 
@@ -86,7 +86,7 @@ Or follow these outlined steps:
 
       ``"/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro"`` and ``"/mnt/data/mri:/data/"`` are mounting the mri data and ria-dicoms archive from the system where the :ref:`StoreSCP <storescp>` container is saving the dicom sessions.
 
-#. At least 3 different runners need to be created as instance-wide runners.
+#. At least 3 different runners need to be created as instance-wide runners to start testing the pipeline.
 
    a. Untagged jobs
    
@@ -102,7 +102,7 @@ Or follow these outlined steps:
          name = "bids-runner-instance"
          url = "https://cpip.ahs.ucalgary.ca"
          id = 8
-         token = "glrt-amxjdeXmzWMyHYSsbRBh"
+         token = "glrt-amxjdeXmzWMyH1234567"
          token_obtained_at = 2023-11-01T18:45:14Z
          token_expires_at = 0001-01-01T00:00:00Z
          executor = "docker"
@@ -117,4 +117,97 @@ Or follow these outlined steps:
             shm_size = 0
             network_mtu = 0
 
+   .. important:: 
+
+      For the preproc runner you need to make sure to add some additional configurations to relax security to allow apptainer to run within docker. Here is the gitlab-runner config for the processing server. The important additions are **devices** and **security_opt.**
+
+      .. code-block:: toml
+
+         [[runners]]
+            name = "process-runner"
+            url = "https://cpip.ahs.ucalgary.ca"
+            id = 9
+            token = "glrt-UXmEaw9qq3G123456789"
+            token_obtained_at = 2023-11-03T15:18:10Z
+            token_expires_at = 0001-01-01T00:00:00Z
+            executor = "docker"
+            [runners.docker]
+               tls_verify = false
+               image = "docker:20.10.16"
+               privileged = false
+               devices = ["/dev/fuse"]
+               security_opt = ["apparmor:unconfined", "seccomp:unconfined"]
+               disable_entrypoint_overwrite = false
+               oom_kill_disable = false
+               disable_cache = false
+               volumes = ["/certs/client", "/cache", "/etc/ssl/certs:/etc/ssl/certs", "/etc/ssl/git-certs/cpip.crt:/etc/ssl/git-certs/cpip.crt", "/mnt/data/mri:/data/", "/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro", "/var/run/docker.sock:/var/run/docker.sock"] 
+               shm_size = 0
+               network_mtu = 0
+
 #. Common errors/solutions when dealing with SSL could be found `here. <https://docs.gitlab.com/omnibus/settings/ssl/ssl_troubleshooting.html>`_
+
+.. _debbugg_it:
+
+Debbugging iteratively inside the runners.
+------------------------------------------
+
+There is a couple of ways in which you can achieve this. For both option, you will need to include sleep statements into de jobs given that gitlab-ci jobs do not continue running after they finish. So, you will need to determine the correct place in order to pause before debbugging.
+   .. code:: 
+
+      - sleep 1200
+
+#. **For the first option** 
+
+   Independent configurations need to be made for both the ``gitlab-runner config file`` and ``self-hosted GitLab`` according to the `oficial documentation. <https://docs.gitlab.com/ee/ci/interactive_web_terminal/>`_
+
+   The ``[session_server]`` section of the /etc/gitlab-runner/config.toml file needs to be modified to include the following.
+
+      .. code-block:: toml
+
+         [session_server]
+            listen_address = "[::]:8093" #  listen on all available interfaces on port 8093
+            advertise_address = "runner-host-name.tld:8093"
+            session_timeout = 1800
+
+      .. important:: 
+         
+         Make sure to restart the GitLab-runner to apply these changes.
+
+   To avoid getting 409 errors in the runner logs, with the runner not managing to get jobs from GitLab. You need to change one configuration from GitLab (apparently through the API only, or it is well hidden).
+
+   Here is what you need to run (with a token `GITLAB_API_PRIVATE_TOKEN` that has admin rights) run:
+   
+      .. code-block:: bash
+         
+         curl --request PUT --header "PRIVATE-TOKEN: $GITLAB_API_PRIVATE_TOKEN" "https://cpip.ahs.ucalgary.ca/api/v4/application/settings?allow_local_requests_from_web_hooks_and_services=true" --insecure 
+         
+   It disables some security features, but not critical.
+
+      .. note:: 
+
+         The ``--insecure`` is required in order to work with **self-signed certificates**
+
+   After doing these, you should be able to see a button that says debbug at the top right job window in the GitLab console. By clicking this button it should take you to the debbugging terminal where you can debbug your pipeline.
+
+      .. figure:: ../../_static/infographics/interactive_web_terminal_running_job.png
+         :width: 600px 
+
+#. **For the second option**
+
+   It involves adding sleep statements in the jobs and login into the temporary docker containers in which the job is currently running.
+
+   Go into the server where your gitlab-runner is active and run ``sudo docker ps`` if you are using docker installation of gitlab-runner. Locate the docker container where your job is running.
+
+      .. note:: 
+
+         You should be able to locate the name of the container directly from the debbugging window in the GitLab console.
+
+            This is an example of how the name can look like `runner-uxmeaw9qq-project-180-concurrent-0-ce63e7005eee31ef-build`
+   
+   Use the name to login into the container by running.
+
+      .. code-block:: bash
+
+         sudo docker exec -it runner-uxmeaw9qq-project-180-concurrent-0-ce63e7005eee31ef-build /bin/bash
+
+   Once you have logged into the container, find the folder where your job was being run, usually ``/builds/**/**``, and happy debbugging.
