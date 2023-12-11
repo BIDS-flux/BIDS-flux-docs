@@ -134,7 +134,7 @@ Old way of doing this
          name = "bids-runner-instance"
          url = "https://cpip.ahs.ucalgary.ca"
          id = 8
-         token = "glrt-amxjdeXmzWMyHYSsbRBh"
+         token = "glrt-amxjdeXmzWMyH1234567"
          token_obtained_at = 2023-11-01T18:45:14Z
          token_expires_at = 0001-01-01T00:00:00Z
          executor = "docker"
@@ -150,18 +150,18 @@ Old way of doing this
             network_mtu = 0
       b. Bids conversion; tag = bids
 
-      c. For pre-processing; tag = preproc
+   .. important:: 
 
-   #. Your new gitlab runner's configuration should have been added to the /etc/gitlab-runner/config.toml from which we will need to follow this `documentation <https://docs.gitlab.com/ee/administration/packages/container_registry.html#using-self-signed-certificates-with-container-registry>`_ in order to make sure that the self signed certificates are included to the docker in docker. Basically, you are need to make sure your runner's configuration contains ``privileged = false`` and the volume ``/var/run/docker.sock:/var/run/docker.sock`` to mount the docker deamon into the docker.
+      For the preproc runner you need to make sure to add some additional configurations to relax security to allow apptainer to run within docker. Here is the gitlab-runner config for the processing server. The important additions are **devices** and **security_opt.**
 
       .. code-block:: toml
-         
+
          [[runners]]
-            name = "bids-runner-instance"
+            name = "process-runner"
             url = "https://cpip.ahs.ucalgary.ca"
-            id = 8
-            token = "glrt-amxjdeXmzWMyH1234567"
-            token_obtained_at = 2023-11-01T18:45:14Z
+            id = 9
+            token = "glrt-UXmEaw9qq3G123456789"
+            token_obtained_at = 2023-11-03T15:18:10Z
             token_expires_at = 0001-01-01T00:00:00Z
             executor = "docker"
             [runners.docker]
