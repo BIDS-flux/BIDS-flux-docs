@@ -60,9 +60,9 @@ Or follow these outlined steps:
 
 #. Run this command to spin up the gitlab-runner container.
 
-.. code-block:: bash
+   .. code-block:: bash
 
-   sudo docker compose -f docker-compose.yml up
+      sudo docker compose -f docker-compose.yml up
 
 #. Follow `this documentation <https://docs.gitlab.com/runner/configuration/tls-self-signed.html>`_ to make sure that your gitlab runner can trust your self signed certificate.
 
