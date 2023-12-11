@@ -86,7 +86,7 @@ Or follow these outlined steps:
 
       ``"/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro"`` and ``"/mnt/data/mri:/data/"`` are mounting the mri data and ria-dicoms archive from the system where the :ref:`StoreSCP <storescp>` container is saving the dicom sessions.
 
-#. At least 3 different runners need to be created as instance-wide runners.
+#. At least 3 different runners need to be created as instance-wide runners to start testing the pipeline.
 
    a. Untagged jobs
    
@@ -102,7 +102,7 @@ Or follow these outlined steps:
          name = "bids-runner-instance"
          url = "https://cpip.ahs.ucalgary.ca"
          id = 8
-         token = "glrt-amxjdeXmzWMyHYSsbRBh"
+         token = "glrt-amxjdeXmzWMyH1234567"
          token_obtained_at = 2023-11-01T18:45:14Z
          token_expires_at = 0001-01-01T00:00:00Z
          executor = "docker"
@@ -116,5 +116,32 @@ Or follow these outlined steps:
             volumes = ["/certs/client", "/cache", "/mnt/data/mri:/data/", "/mnt/data/mri:/data/", "/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro", "/var/run/docker.sock:/var/run/docker.sock"]
             shm_size = 0
             network_mtu = 0
+
+   .. important:: 
+
+      For the preproc runner you need to make sure to add some additional configurations to relax security to allow apptainer to run within docker. Here is the gitlab-runner config for the processing server. The important additions are **devices** and **security_opt.**
+
+      .. code-block:: toml
+
+         [[runners]]
+            name = "process-runner"
+            url = "https://cpip.ahs.ucalgary.ca"
+            id = 9
+            token = "glrt-UXmEaw9qq3GK9aUVzL4B"
+            token_obtained_at = 2023-11-03T15:18:10Z
+            token_expires_at = 0001-01-01T00:00:00Z
+            executor = "docker"
+            [runners.docker]
+               tls_verify = false
+               image = "docker:20.10.16"
+               privileged = false
+               devices = ["/dev/fuse"]
+               security_opt = ["apparmor:unconfined", "seccomp:unconfined"]
+               disable_entrypoint_overwrite = false
+               oom_kill_disable = false
+               disable_cache = false
+               volumes = ["/certs/client", "/cache", "/etc/ssl/certs:/etc/ssl/certs", "/etc/ssl/git-certs/cpip.crt:/etc/ssl/git-certs/cpip.crt", "/mnt/data/mri:/data/", "/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro", "/var/run/docker.sock:/var/run/docker.sock"] 
+               shm_size = 0
+               network_mtu = 0
 
 #. Common errors/solutions when dealing with SSL could be found `here. <https://docs.gitlab.com/omnibus/settings/ssl/ssl_troubleshooting.html>`_
