@@ -60,9 +60,9 @@ Or follow these outlined steps:
 
 #. Run this command to spin up the gitlab-runner container.
 
-   .. code-block:: bash
+.. code-block:: bash
 
-      sudo docker compose -f docker-compose.yml up
+   sudo docker compose -f docker-compose.yml up
 
 #. Follow `this documentation <https://docs.gitlab.com/runner/configuration/tls-self-signed.html>`_ to make sure that your gitlab runner can trust your self signed certificate.
 
@@ -86,7 +86,7 @@ Or follow these outlined steps:
 
       ``"/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro"`` and ``"/mnt/data/mri:/data/"`` are mounting the mri data and ria-dicoms archive from the system where the :ref:`StoreSCP <storescp>` container is saving the dicom sessions.
 
-#. At least 3 different runners need to be created as instance-wide runners to start testing the pipeline.
+#. At least 3 different runners need to be created as instance-wide runners.
 
    a. Untagged jobs
    
@@ -102,7 +102,7 @@ Or follow these outlined steps:
          name = "bids-runner-instance"
          url = "https://cpip.ahs.ucalgary.ca"
          id = 8
-         token = "glrt-amxjdeXmzWMyH1234567"
+         token = "glrt-amxjdeXmzWMyHYSsbRBh"
          token_obtained_at = 2023-11-01T18:45:14Z
          token_expires_at = 0001-01-01T00:00:00Z
          executor = "docker"
@@ -211,3 +211,4 @@ There is a couple of ways in which you can achieve this. For both option, you wi
          sudo docker exec -it runner-uxmeaw9qq-project-180-concurrent-0-ce63e7005eee31ef-build /bin/bash
 
    Once you have logged into the container, find the folder where your job was being run, usually ``/builds/**/**``, and happy debbugging.
+#. Common errors/solutions when dealing with SSL could be found `here. <https://docs.gitlab.com/omnibus/settings/ssl/ssl_troubleshooting.html>`_

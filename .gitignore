@@ -1,2 +1,5 @@
+*/build/
+**/build/
 build
 _build
+settings.json
