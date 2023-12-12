@@ -67,8 +67,8 @@ We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`
 
             .. code-block:: bash
 
-               cp /etc/gitlab/ssl/cpip.ahs.ucalgary.ca.crt /etc/pki/ca-trust/source/anchors/cpip.ahs.ucalgary.ca.crt
-               update-ca-trust
+               sudo cp /etc/gitlab/ssl/cpip.ahs.ucalgary.ca.crt /etc/pki/ca-trust/source/anchors/cpip.ahs.ucalgary.ca.crt
+               sudo update-ca-trust extract
 
       
    #. **Installation of GitLab using docker.**
