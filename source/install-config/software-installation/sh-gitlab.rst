@@ -80,7 +80,7 @@ Configuration
 
 After installation, there are additional configurations required before the pipeline is ready to pocess images.
 
-#. First, install `gitlab-runner <gitlab-runner-setup>` following the tutorials, and create the minimal number of instance-wide (can be accessed by jobs triggered from any repository, even if created after the creation of the runners) runners required.
+#. First, install :ref:`gitlab-runner <gitlab-runner-setup>` following the tutorials, and create the minimal number of instance-wide (can be accessed by jobs triggered from any repository, even if created after the creation of the runners) runners required.
 
 #. Create an empty new project called ni-dataops.
 
