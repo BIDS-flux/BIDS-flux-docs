@@ -73,12 +73,21 @@ We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`
       
    #. **Installation of GitLab using docker.**
    
-   The installation of pretty much anything is possible using Docker. All you need to do is follow their `installation guide <https://docs.gitlab.com/ee/install/docker.html#install-gitlab-using-docker-compose>`_ using docker compose. I was not able to make this work on Calgary's servers using RedHat.
+      The installation of pretty much anything is possible using Docker. All you need to do is follow their `installation guide <https://docs.gitlab.com/ee/install/docker.html#install-gitlab-using-docker-compose>`_ using docker compose. I was not able to make this work on Calgary's servers using RedHat.
+
+      .. note:: 
+
+         You can find information on how to change password using the terminal in `this disscusion <https://forum.gitlab.com/t/default-root-password-for-gitlab-running-in-a-docker-container/59677/8>`_.
+
+            .. code:: 
+
+               gitlab-rake “gitlab:password:reset”
+               #follow the steps to change the password
 
 Configuration
 ~~~~~~~~~~~~~
 
-After installation, there are additional configurations required before the pipeline is ready to pocess images.
+After installation, there are additional configurations required before the pipeline is ready to process images.
 
 #. First, install :ref:`gitlab-runner <gitlab-runner-setup>` following the tutorials, and create the minimal number of instance-wide (can be accessed by jobs triggered from any repository, even if created after the creation of the runners) runners required.
 
