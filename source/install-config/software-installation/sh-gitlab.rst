@@ -63,7 +63,7 @@ We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`
                   "insecure-registries" : [ "cpip.ahs.ucalgary.ca","cpip.ahs.ucalgary.ca:5050" ]
                   }
 
-         b. You also need to make sure that your system trusts the created certificate by following `these instructions <https://docs.docker.com/registry/insecure/#use-self-signed-certificates>`_.
+         b. You also need to make sure that your system trusts the created certificate by following `these instructions <https://stackoverflow.com/questions/22509271/import-self-signed-certificate-in-redhat>`_. These are specific o RedHat 8 follow a simillar guide for your OS.
 
             .. code-block:: bash
 
