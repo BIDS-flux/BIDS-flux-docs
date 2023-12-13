@@ -77,12 +77,17 @@ We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`
 
       .. note:: 
 
-         You can find information on how to change password using the terminal in `this disscusion <https://forum.gitlab.com/t/default-root-password-for-gitlab-running-in-a-docker-container/59677/8>`_.
+         You can find information on how to change password using the terminal in `this disscusion <https://stackoverflow.com/questions/55747402/docker-gitlab-change-forgotten-root-password>`_.
 
-            .. code:: 
+            .. code:: ruby
 
-               gitlab-rake “gitlab:password:reset”
-               #follow the steps to change the password
+               #You will need to do this through the ruby console
+               user = User.where(id: 1).first
+               user.password = 'your secret'
+               user.password_confirmation = 'your secret'
+               user.state = 'active'
+               user.save!
+               exit
 
 Configuration
 ~~~~~~~~~~~~~
