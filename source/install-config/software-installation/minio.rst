@@ -173,3 +173,9 @@ Option 2: Docker swarm installation
     .. code-block:: bash
 
         docker stack deploy --compose-file docker-compose.minio.yml gitlab
+
+#. Debbugging
+
+    .. note:: 
+
+        Check `this <https://stackoverflow.com/questions/55087903/docker-logs-errors-of-services-of-stack-deploy>`_ post for debbugging.
