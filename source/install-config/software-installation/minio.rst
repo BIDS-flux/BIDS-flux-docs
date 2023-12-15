@@ -179,3 +179,7 @@ Option 2: Docker swarm installation
     .. note:: 
 
         Check `this <https://stackoverflow.com/questions/55087903/docker-logs-errors-of-services-of-stack-deploy>`_ post for debbugging.
+
+    .. note:: 
+
+        In docker swarm in order to mount a volume to a container, such volume must exist. This is not necessary using docker compose where directories are created if missing.
