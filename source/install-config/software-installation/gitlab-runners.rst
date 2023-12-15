@@ -72,7 +72,7 @@ Or follow these outlined steps:
 
    .. code-block:: bash
 
-      docker exec -it <your-gitlab-container> gitlab-runner register -n -u <your-gitlab-instance, for instance: https://cpip.ahs.ucalgary.ca> --token glrt-amxjdeXmzWMyHYSsbRBh --executor docker --description bids-runner --docker-privileged=false --docker-volumes "/certs/client" "/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro" "/var/run/docker.sock:/var/run/docker.sock" "/mnt/data/mri:/data/" --docker-image "docker:20.10.16"
+      docker exec -it <your-gitlab-container> gitlab-runner register -n -u <your-gitlab-instance, for instance: https://cpip.ahs.ucalgary.ca> --token glrt-amxjdeXmzWMyHYSsbRBh --executor docker --description bids-runner --docker-privileged=false --docker-volumes "/certs/client" --docker-volumes "/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro" --docker-volumes "/var/run/docker.sock:/var/run/docker.sock" --docker-volumes "/mnt/data/mri:/data/" --docker-image "docker:20.10.16"
 
    .. important::
 
