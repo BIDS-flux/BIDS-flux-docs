@@ -139,3 +139,8 @@ After installation, there are additional configurations required before the pipe
    e. S3_SECRET = S3 password set in the :ref:`minio installation <minio>`
 
    f. SSH_KNOWN_HOSTS = created copying the output of ssh-keyscan <IP of your self-hosted gitlab> into the value of the variable.
+
+Debbugging
+~~~~~~~~~~
+
+#. Allow a new ssh port in the system can be achieved. Follow `this post <https://stackoverflow.com/questions/11672525/centos-6-3-ssh-bind-to-port-xxx-on-0-0-0-0-failed-permission-denied>`_ for more information.
