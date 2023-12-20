@@ -132,6 +132,14 @@ After installation, there are additional configurations required before the pipe
 
    b. BOT_SSH_KEY = this key is generated from the gitlab-runner from the ``bids runner``
 
+      .. note:: 
+
+         This is the private key starting with -------something------- and ending with -----------end------------. It should be generated from inside the runner instance.
+
+      .. note:: 
+
+         Additionally, the public part of the key added need to be added to bids_bot profile ssh_keys.
+
    c. GIT_BOT_USERNAME = bids_bot
 
    d. GIT_BOT_EMAIL = bids_bot@ahs.ucalgary.ca
@@ -139,6 +147,12 @@ After installation, there are additional configurations required before the pipe
    e. S3_SECRET = S3 password set in the :ref:`minio installation <minio>`
 
    f. SSH_KNOWN_HOSTS = created copying the output of ssh-keyscan <IP of your self-hosted gitlab> into the value of the variable.
+
+      .. note:: 
+
+         This variable needs to contain Host and IP of the self-hosted Gitlab
+
+
 
 Debbugging
 ~~~~~~~~~~
