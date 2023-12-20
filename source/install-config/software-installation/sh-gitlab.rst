@@ -63,24 +63,38 @@ We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`
                   "insecure-registries" : [ "cpip.ahs.ucalgary.ca","cpip.ahs.ucalgary.ca:5050" ]
                   }
 
-         b. You also need to make sure that your system trusts the created certificate by following `these instructions <https://docs.docker.com/registry/insecure/#use-self-signed-certificates>`_.
+         b. You also need to make sure that your system trusts the created certificate by following `these instructions <https://stackoverflow.com/questions/22509271/import-self-signed-certificate-in-redhat>`_. These are specific o RedHat 8 follow a simillar guide for your OS.
 
             .. code-block:: bash
 
-               cp /etc/gitlab/ssl/cpip.ahs.ucalgary.ca.crt /etc/pki/ca-trust/source/anchors/cpip.ahs.ucalgary.ca.crt
-               update-ca-trust
+               sudo cp /etc/gitlab/ssl/cpip.ahs.ucalgary.ca.crt /etc/pki/ca-trust/source/anchors/cpip.ahs.ucalgary.ca.crt
+               sudo update-ca-trust extract
 
       
    #. **Installation of GitLab using docker.**
    
-   The installation of pretty much anything is possible using Docker. All you need to do is follow their `installation guide <https://docs.gitlab.com/ee/install/docker.html#install-gitlab-using-docker-compose>`_ using docker compose. I was not able to make this work on Calgary's servers using RedHat.
+      The installation of pretty much anything is possible using Docker. All you need to do is follow their `installation guide <https://docs.gitlab.com/ee/install/docker.html#install-gitlab-using-docker-compose>`_ using docker compose. I was not able to make this work on Calgary's servers using RedHat.
+
+      .. note:: 
+
+         You can find information on how to change password using the terminal in `this disscusion <https://stackoverflow.com/questions/55747402/docker-gitlab-change-forgotten-root-password>`_.
+
+            .. code:: ruby
+
+               #You will need to do this through the ruby console
+               user = User.where(id: 1).first
+               user.password = 'your secret'
+               user.password_confirmation = 'your secret'
+               user.state = 'active'
+               user.save!
+               exit
 
 Configuration
 ~~~~~~~~~~~~~
 
-After installation, there are additional configurations required before the pipeline is ready to pocess images.
+After installation, there are additional configurations required before the pipeline is ready to process images.
 
-#. First, install `gitlab-runner <gitlab-runner-setup>` following the tutorials, and create the minimal number of instance-wide (can be accessed by jobs triggered from any repository, even if created after the creation of the runners) runners required.
+#. First, install :ref:`gitlab-runner <gitlab-runner-setup>` following the tutorials, and create the minimal number of instance-wide (can be accessed by jobs triggered from any repository, even if created after the creation of the runners) runners required.
 
 #. Create an empty new project called ni-dataops.
 
@@ -118,6 +132,14 @@ After installation, there are additional configurations required before the pipe
 
    b. BOT_SSH_KEY = this key is generated from the gitlab-runner from the ``bids runner``
 
+      .. note:: 
+
+         This is the private key starting with -------something------- and ending with -----------end------------. It should be generated from inside the runner instance.
+
+      .. note:: 
+
+         Additionally, the public part of the key added need to be added to bids_bot profile ssh_keys.
+
    c. GIT_BOT_USERNAME = bids_bot
 
    d. GIT_BOT_EMAIL = bids_bot@ahs.ucalgary.ca
@@ -125,3 +147,14 @@ After installation, there are additional configurations required before the pipe
    e. S3_SECRET = S3 password set in the :ref:`minio installation <minio>`
 
    f. SSH_KNOWN_HOSTS = created copying the output of ssh-keyscan <IP of your self-hosted gitlab> into the value of the variable.
+
+      .. note:: 
+
+         This variable needs to contain Host and IP of the self-hosted Gitlab
+
+
+
+Debbugging
+~~~~~~~~~~
+
+#. Allow a new ssh port in the system can be achieved. Follow `this post <https://stackoverflow.com/questions/11672525/centos-6-3-ssh-bind-to-port-xxx-on-0-0-0-0-failed-permission-denied>`_ for more information.

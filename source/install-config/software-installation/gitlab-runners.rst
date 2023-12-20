@@ -72,7 +72,7 @@ Or follow these outlined steps:
 
    .. code-block:: bash
 
-      docker exec -it <your-gitlab-container> gitlab-runner register -n -u <your-gitlab-instance, for instance: https://cpip.ahs.ucalgary.ca> --token glrt-amxjdeXmzWMyHYSsbRBh --executor docker --description bids-runner --docker-privileged=false --docker-volumes "/certs/client" "/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro" "/var/run/docker.sock:/var/run/docker.sock" "/mnt/data/mri:/data/" --docker-image "docker:20.10.16"
+      docker exec -it <your-gitlab-container> gitlab-runner register -n -u <your-gitlab-instance, for instance: https://cpip.ahs.ucalgary.ca> --token glrt-amxjdeXmzWMyHYSsbRBh --executor docker --description bids-runner --docker-privileged=false --docker-volumes "/etc/ssl/stack-certs/cpip.crt:/etc/ssl/stack-certs/cpip.crt" --docker-volumes "/certs/client" --docker-volumes "/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro" --docker-volumes "/var/run/docker.sock:/var/run/docker.sock" --docker-volumes "/mnt/data/mri:/data/" --docker-image "docker:20.10.16"
 
    .. important::
 
@@ -81,6 +81,10 @@ Or follow these outlined steps:
    .. note::
 
       If you did not use docker to install gitlab-runner, you should remove: ``docker exec -it <your-gitlab-container>``.
+
+   .. important:: 
+
+      Don't forget to add the self-signed certificates as volumes to the runners when you are registering them. This involves creating the certifiates ``For GitLab and for MinIO`` and copying them both in a single file called ``/etc/ssl/stack-certs/cpip.crt``.
 
    .. note::
 
