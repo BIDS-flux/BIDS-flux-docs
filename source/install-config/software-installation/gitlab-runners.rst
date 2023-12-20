@@ -82,6 +82,10 @@ Or follow these outlined steps:
 
       If you did not use docker to install gitlab-runner, you should remove: ``docker exec -it <your-gitlab-container>``.
 
+   .. important:: 
+
+      Don't forget to add the self-signed certificates as volumes to the runners when you are registering them. This involves creating the certifiates ``For GitLab and for MinIO`` and copying them both in a single file called ``/etc/ssl/stack-certs/cpip.crt``.
+
    .. note::
 
       ``"/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro"`` and ``"/mnt/data/mri:/data/"`` are mounting the mri data and ria-dicoms archive from the system where the :ref:`StoreSCP <storescp>` container is saving the dicom sessions.
