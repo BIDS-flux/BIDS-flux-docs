@@ -103,7 +103,7 @@ You can find the installation guides for the different operating systems in this
         .. code-block:: bash
 
             #for approx 10 years
-            certgen -duration 220000h0m0s -host "139.48.221.19:9000,minio.ahs.ucalgary.ca" -
+            certgen -duration 220000h0m0s -host "139.48.221.19:9000,minio.ahs.ucalgary.ca,minio.ahs.ucalgary.ca:9000" -
             #move them to the certs folder
             mv private.key ~/.minio/certs/
             mv public.crt ~/.minio/certs/
