@@ -3,6 +3,12 @@
 Docker Installation
 =============================
 
+Montreal
++++++++
+
+* Montreal is working with Ubuntu. `Installation of docker <https://docs.docker.com/engine/install/ubuntu/>`_
+* `Installation of docker compose <https://docs.docker.com/compose/install/linux/>`_
+
 Calgary
 +++++++
 
