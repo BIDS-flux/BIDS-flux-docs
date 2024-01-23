@@ -1,6 +1,30 @@
 Self-hosted GitLab Setup
 =============================
 
+Montreal
++++++++++++++++++++
+
+Installation
+~~~~~~~~~~~~~
+
+.. _creationofssl:
+
+#. **Install** `self-hosted Gitlab <https://about.gitlab.com/install/#ubuntu>`_
+
+#. **Setup** `self-signed certificates <https://docs.gitlab.com/omnibus/settings/ssl/index.html#configure-https-manually>`_
+
+#. **Disable user creation to avoid undesired users** `follow these instructions. <https://computingforgeeks.com/disable-user-signup-on-gitlab-welcome-page/>`_
+
+#. Talk to whoever manages your network to have them add your new hostname (e.g., cpip.server-2.imagerie.user-vms.cqgc.hsj.rtss.qc.ca) to the DNS.
+
+#. Follow these `instructions 1 <https://docs.gitlab.com/omnibus/settings/ssl/index.html>`_ or `instructions 2 <https://computingforgeeks.com/how-to-secure-gitlab-server-with-ssl-certificate/?expand_article=1>`_ and reconfigure gitlab to accept self-signed certificates.
+
+#. **Enable a container registry with the same self-signed certificate.**
+
+#. **See Calgary instructions for the remaining steps**
+
+
+
 Calgary
 +++++++++++++++++++
 
