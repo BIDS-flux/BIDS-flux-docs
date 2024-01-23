@@ -18,6 +18,7 @@ Installation
 #. Talk to whoever manages your network to have them add your new hostname (e.g., cpip.server-2.imagerie.user-vms.cqgc.hsj.rtss.qc.ca) to the DNS.
 
 #. Follow these `instructions 1 <https://docs.gitlab.com/omnibus/settings/ssl/index.html>`_ or `instructions 2 <https://computingforgeeks.com/how-to-secure-gitlab-server-with-ssl-certificate/?expand_article=1>`_ and reconfigure gitlab to accept self-signed certificates.
+   #. Note: use `this information to create the keys <openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout 10.128.81.225.key -out 10.128.81.225.crt>`_ where here we are using an IP, but ideally we would be using a DNS associated to that IP.
 
 #. **Enable a container registry with the same self-signed certificate.**
 
