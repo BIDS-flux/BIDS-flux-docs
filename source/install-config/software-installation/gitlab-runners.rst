@@ -148,6 +148,19 @@ Or follow these outlined steps:
                shm_size = 0
                network_mtu = 0
 
+   .. important::
+
+      For errors regarding ``ERROR: Job failed: failed to pull image "<registry_hostname>/ni-dataops/containers/heudiconv:latest" with specified policies [always]: Error response from daemon: Head "https://ITAPPCPIPDT01.uc.ucalgary.ca:5050/v2/ni-dataops/containers/heudiconv/manifests/latest": denied: access forbidden (manager.go:250:0s)`` docker swarm for the deployment `this post <https://www.awaimai.com/en/3100.html>`_ mentions how to solve it.
+
+      .. code:: yaml
+
+         # All you need to do is add the following configurtion to the gitlab runners config in /etc/gitlab-runner/config.toml
+         [[runners]]
+         #....
+         [runners.docker]
+            pull_policy = ["if-not-present", "always"]
+            #...
+
 #. Common errors/solutions when dealing with SSL could be found `here. <https://docs.gitlab.com/omnibus/settings/ssl/ssl_troubleshooting.html>`_
 
 .. _debbugg_it:
