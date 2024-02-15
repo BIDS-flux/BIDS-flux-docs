@@ -4,7 +4,7 @@ Self-hosted GitLab Setup
 Calgary
 +++++++++++++++++++
 
-Installation
+Direct GitLab Installation
 ~~~~~~~~~~~~~
 
 We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`_ for installing gitlab in centos/redhat 8, it also works for redhat 9. It is imporant to make the following considerations when following the steps.
@@ -89,6 +89,8 @@ We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`
                user.save!
                exit
 
+.. _gitlab_config:
+
 Configuration
 ~~~~~~~~~~~~~
 
@@ -169,3 +171,15 @@ Debbugging
          pull_policy = ["if-not-present", "always"]
          #...
 
+.. _docker_swarm_gitlab:
+
+Docker Swarm GitLab Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#. Follow the steps for the the creation of selfsigned certificates that was previously :ref:`outlined <creationofssl>`.
+
+#. Clone the UNF repository `ni-dataops/stack <https://gitlab.unf-montreal.ca/ni-dataops/stack.git>`_.
+
+#. Do the modifications necesary to set your `hostname` and run the command `sudo GITLAB_HOME=/srv/gitlab/ docker stack deploy -c docker_compose.gitlab.yml cpip`.
+
+#. Follow the previous steps to :ref:`configure gitlab <gitlab_config>`.
