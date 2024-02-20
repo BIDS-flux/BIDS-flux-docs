@@ -119,7 +119,7 @@ After installation, there are additional configurations required before the pipe
 
 #. Create some users which will be necessary to run some of the task like DICOM to BIDS conversion, processing, etc.
 
-   a. bids_bot
+   a. bids_bot = Admin level so it can access all repos
    b. dicom_bot = Admin level because its token need to have elevated privileges to use with the GitLab API.
 
 #. ``Install MinIO`` in you data server following :ref:`this guide <minio>`.
