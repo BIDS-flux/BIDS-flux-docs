@@ -1,106 +1,121 @@
 .. _gitlab-runner-setup:
 
-GitLab Runners Setup
-=============================
+GitLab Runners Installation and Setup
+=====================================
 
 Calgary
 +++++++
 
-For Calgary we will use a docker compose file living in a repository to install GitLab runner. 
+For Calgary we will use a docker swarm deployment.
 
-Either clone the repository: `https://gitlab.com/cal_cpip/calgary-servers.git <https://gitlab.com/cal_cpip/calgary-servers.git>`_ and run the following command:
+#. Clone the UNF repository `ni-dataops/stack <https://gitlab.unf-montreal.ca/ni-dataops/stack.git>`_ into the `manager and worker nodes`.
 
-.. code-block:: bash
+#. If using the selfsigned-cert branch make sure to build the docker images in the worker node (processing server). 
 
-   sudo docker compose -f calgary-servers/sequoia/docker-compose.gitlab-runner_dev.yml up
+#. SSH into the manager node (data server) and run de following:
 
-Or follow these outlined steps:
+   .. code:: 
 
-#. First create a folder with a Dockerfile like the following inside a folder you can call gitlab-runner.
+      docker stack deploy -c docker-compose.gitlab-runner.yml cpip
 
-   .. code-block:: bash
+#. Make sure that the docker-compose file point the service deployment to the `worker node` using the constraints. 
 
-      mkdir gitlab-runner
-      cd gitlab-runner
+   .. code:: yml
 
-#. Create the Dockerfile and add the necessary certificates straight into the image.
+      deploy:
+      placement:
+         constraints:
+         - node.hostname == worker-node.ca
 
-   .. code-block:: dockerfile
+#. More documentation on how to automatically deploy the gitlab runners to come.
 
-      FROM gitlab/gitlab-runner:alpine
+#. Provitionally the folowing instructions will guide on the creation of the requided images and the registration of the instance wide gitlab-runners.
 
-      RUN mkdir -p /etc/ssl/certs/
-      RUN update-ca-certificates
-
-      RUN apk add 
-
-      COPY minio.ahs.ucalgary.ca.crt /etc/ssl/certs/cert1.crt
-      COPY cpip.ahs.ucalgary.ca.crt /etc/ssl/certs/cert2.crt
-
-      RUN cat minio.ahs.ucalgary.ca.crt >> /etc/gitlab-runner/certs/ca.crt
-      RUN cat cpip.ahs.ucalgary.ca.crt >> /etc/gitlab-runner/certs/ca.crt
-
-      RUN update-ca-certificates
-
-
-#. Then create a docker-compose.yml file with the following contents.
-
-   .. code-block:: yaml
-
-      version: "3.6"
-      services:
-      gitlab-runner:
-         build:
-            context: ./gitlab-runner/
-         ports:
-            - "8093:8093"
-         volumes:
-            - ./gitlab-runner/config:/etc/gitlab-runner/
-            - /var/run/docker.sock:/var/run/docker.sock
-
-#. Run this command to spin up the gitlab-runner container.
-
-.. code-block:: bash
-
-   sudo docker compose -f docker-compose.yml up
-
-#. Follow `this documentation <https://docs.gitlab.com/runner/configuration/tls-self-signed.html>`_ to make sure that your gitlab runner can trust your self signed certificate.
-
-#. To create this runners, you will need to first go into your gitlab instance interface **as an admin**. Navigate to the ``admin area navigate into CI/CD>runners>new instance runner`` and follow the steps util you get the token required to register your runner.   
-
-#. Now, on the server where you installed gitlab-runner, if you are using docker, you will need to create your gitlab-runners using something like the following:
+   Either clone the repository: `https://gitlab.com/cal_cpip/calgary-servers.git <https://gitlab.com/cal_cpip/calgary-servers.git>`_ and run the following command:
 
    .. code-block:: bash
 
-      docker exec -it <your-gitlab-container> gitlab-runner register -n -u <your-gitlab-instance, for instance: https://cpip.ahs.ucalgary.ca> --token glrt-amxjdeXmzWMyHYSsbRBh --executor docker --description bids-runner --docker-privileged=false --docker-volumes "/etc/ssl/stack-certs/cpip.crt:/etc/ssl/stack-certs/cpip.crt" --docker-volumes "/certs/client" --docker-volumes "/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro" --docker-volumes "/var/run/docker.sock:/var/run/docker.sock" --docker-volumes "/mnt/data/mri:/data/" --docker-image "docker:20.10.16"
+      sudo docker compose -f calgary-servers/sequoia/docker-compose.gitlab-runner_dev.yml up
 
-   .. important::
+   Or follow these outlined steps:
 
-      For this previous command to work you will need to use the token obtained in the previous step which will start with ``glrt``.
+   #. First create a folder with a Dockerfile like the following inside a folder you can call gitlab-runner.
 
-   .. note::
+      .. code-block:: bash
 
-      If you did not use docker to install gitlab-runner, you should remove: ``docker exec -it <your-gitlab-container>``.
+         mkdir gitlab-runner
+         cd gitlab-runner
 
-   .. important:: 
+   #. Create the Dockerfile and add the necessary certificates straight into the image.
 
-      Don't forget to add the self-signed certificates as volumes to the runners when you are registering them. This involves creating the certifiates ``For GitLab and for MinIO`` and copying them both in a single file called ``/etc/ssl/stack-certs/cpip.crt``.
+      .. code-block:: dockerfile
 
-   .. note::
+         FROM gitlab/gitlab-runner
 
-      ``"/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro"`` and ``"/mnt/data/mri:/data/"`` are mounting the mri data and ria-dicoms archive from the system where the :ref:`StoreSCP <storescp>` container is saving the dicom sessions.
+         RUN mkdir -p /etc/ssl/certs/
+         RUN update-ca-certificates
 
-#. At least 3 different runners need to be created as instance-wide runners.
+         RUN apk add 
 
-   a. Untagged jobs
-   
-   b. Bids conversion; tag = bids
+         COPY minio.ahs.ucalgary.ca.crt /etc/ssl/certs/cert1.crt
+         COPY cpip.ahs.ucalgary.ca.crt /etc/ssl/certs/cert2.crt
 
-   c. For pre-processing; tag = preproc
+         RUN cat minio.ahs.ucalgary.ca.crt >> /etc/gitlab-runner/certs/ca.crt
+         RUN cat cpip.ahs.ucalgary.ca.crt >> /etc/gitlab-runner/certs/ca.crt
 
-#. Your new gitlab runner's configuration should have been added to the /etc/gitlab-runner/config.toml from which we will need to follow this `documentation <https://docs.gitlab.com/ee/administration/packages/container_registry.html#using-self-signed-certificates-with-container-registry>`_ in order to make sure that the self signed certificates are included to the docker in docker. Basically, you are need to make sure your runner's configuration contains ``privileged = false`` and the volume ``/var/run/docker.sock:/var/run/docker.sock`` to mount the docker deamon into the docker.
+         RUN update-ca-certificates --fresh
 
-   .. code-block:: toml
+
+   #. Then create a docker-compose.yml file with the following contents.
+
+      .. code-block:: yaml
+
+         version: "3.6"
+         services:
+         gitlab-runner:
+            build:
+               context: ./gitlab-runner/
+            ports:
+               - "8093:8093"
+            volumes:
+               - ./gitlab-runner/config:/etc/gitlab-runner/
+               - /var/run/docker.sock:/var/run/docker.sock
+
+   #. Run this command to spin up the gitlab-runner container.
+
+      .. code-block:: bash
+
+         sudo docker compose -f docker-compose.yml up
+
+   #. Follow `this documentation <https://docs.gitlab.com/runner/configuration/tls-self-signed.html>`_ to make sure that your gitlab runner can trust your self signed certificate.
+
+   #. To create this runners, you will need to first go into your gitlab instance interface **as an admin**. Navigate to the ``admin area navigate into CI/CD>runners>new instance runner`` and follow the steps util you get the token required to register your runner.   
+
+   #. Now, on the server where you installed gitlab-runner, if you are using docker, you will need to create your gitlab-runners using something like the following:
+
+      .. code-block:: bash
+
+         docker exec -it <your-gitlab-container> gitlab-runner register -n -u <your-gitlab-instance, for instance: https://cpip.ahs.ucalgary.ca> --token glrt-amxjdeXmzWMyHYSsbRBh --executor docker --description bids-runner --docker-privileged=false --docker-volumes "/etc/ssl/stack-certs/cpip.crt:/etc/ssl/stack-certs/cpip.crt" --docker-volumes "/certs/client" --docker-volumes "/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro" --docker-volumes "/var/run/docker.sock:/var/run/docker.sock" --docker-volumes "/mnt/data/mri:/data/" --docker-image "docker:20.10.16"
+
+      .. important::
+
+         For this previous command to work you will need to use the token obtained in the previous step which will start with ``glrt``.
+
+      .. note::
+
+         If you did not use docker to install gitlab-runner, you should remove: ``docker exec -it <your-gitlab-container>``.
+
+      .. important:: 
+
+         Don't forget to add the self-signed certificates as volumes to the runners when you are registering them. This involves creating the certifiates ``For GitLab and for MinIO`` and copying them both in a single file called ``/etc/ssl/stack-certs/cpip.crt``.
+
+      .. note::
+
+         ``"/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro"`` and ``"/mnt/data/mri:/data/"`` are mounting the mri data and ria-dicoms archive from the system where the :ref:`StoreSCP <storescp>` container is saving the dicom sessions.
+
+   #. At least 3 different runners need to be created as instance-wide runners to start testing the pipeline.
+
+      a. Untagged jobs
       
       [[runners]]
          name = "bids-runner-instance"
@@ -120,48 +135,74 @@ Or follow these outlined steps:
             volumes = ["/certs/client", "/cache", "/mnt/data/mri:/data/", "/mnt/data/mri:/data/", "/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro", "/var/run/docker.sock:/var/run/docker.sock"]
             shm_size = 0
             network_mtu = 0
+      b. Bids conversion; tag = bids
 
-   .. important:: 
+      c. For pre-processing; tag = preproc
 
-      For the preproc runner you need to make sure to add some additional configurations to relax security to allow apptainer to run within docker. Here is the gitlab-runner config for the processing server. The important additions are **devices** and **security_opt.**
+   #. Your new gitlab runner's configuration should have been added to the /etc/gitlab-runner/config.toml from which we will need to follow this `documentation <https://docs.gitlab.com/ee/administration/packages/container_registry.html#using-self-signed-certificates-with-container-registry>`_ in order to make sure that the self signed certificates are included to the docker in docker. Basically, you are need to make sure your runner's configuration contains ``privileged = false`` and the volume ``/var/run/docker.sock:/var/run/docker.sock`` to mount the docker deamon into the docker.
 
       .. code-block:: toml
-
+         
          [[runners]]
-            name = "process-runner"
+            name = "bids-runner-instance"
             url = "https://cpip.ahs.ucalgary.ca"
-            id = 9
-            token = "glrt-UXmEaw9qq3G123456789"
-            token_obtained_at = 2023-11-03T15:18:10Z
+            id = 8
+            token = "glrt-amxjdeXmzWMyH1234567"
+            token_obtained_at = 2023-11-01T18:45:14Z
             token_expires_at = 0001-01-01T00:00:00Z
             executor = "docker"
             [runners.docker]
                tls_verify = false
                image = "docker:20.10.16"
                privileged = false
-               devices = ["/dev/fuse"]
-               security_opt = ["apparmor:unconfined", "seccomp:unconfined"]
                disable_entrypoint_overwrite = false
                oom_kill_disable = false
                disable_cache = false
-               volumes = ["/certs/client", "/cache", "/etc/ssl/certs:/etc/ssl/certs", "/etc/ssl/git-certs/cpip.crt:/etc/ssl/git-certs/cpip.crt", "/mnt/data/mri:/data/", "/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro", "/var/run/docker.sock:/var/run/docker.sock"] 
+               volumes = ["/certs/client", "/cache", "/mnt/data/mri:/data/", "/mnt/data/mri:/data/", "/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro", "/var/run/docker.sock:/var/run/docker.sock"]
                shm_size = 0
                network_mtu = 0
 
-   .. important::
+      .. important:: 
 
-      For errors regarding ``ERROR: Job failed: failed to pull image "<registry_hostname>/ni-dataops/containers/heudiconv:latest" with specified policies [always]: Error response from daemon: Head "https://ITAPPCPIPDT01.uc.ucalgary.ca:5050/v2/ni-dataops/containers/heudiconv/manifests/latest": denied: access forbidden (manager.go:250:0s)`` docker swarm for the deployment `this post <https://www.awaimai.com/en/3100.html>`_ mentions how to solve it.
+         For the preproc runner you need to make sure to add some additional configurations to relax security to allow apptainer to run within docker. Here is the gitlab-runner config for the processing server. The important additions are **devices** and **security_opt.**
 
-      .. code:: yaml
+         .. code-block:: toml
 
-         # All you need to do is add the following configurtion to the gitlab runners config in /etc/gitlab-runner/config.toml
-         [[runners]]
-         #....
-         [runners.docker]
-            pull_policy = ["if-not-present", "always"]
-            #...
+            [[runners]]
+               name = "process-runner"
+               url = "https://cpip.ahs.ucalgary.ca"
+               id = 9
+               token = "glrt-UXmEaw9qq3G123456789"
+               token_obtained_at = 2023-11-03T15:18:10Z
+               token_expires_at = 0001-01-01T00:00:00Z
+               executor = "docker"
+               [runners.docker]
+                  tls_verify = false
+                  image = "docker:20.10.16"
+                  privileged = false
+                  devices = ["/dev/fuse"]
+                  security_opt = ["apparmor:unconfined", "seccomp:unconfined"]
+                  disable_entrypoint_overwrite = false
+                  oom_kill_disable = false
+                  disable_cache = false
+                  volumes = ["/certs/client", "/cache", "/etc/ssl/certs:/etc/ssl/certs", "/etc/ssl/git-certs/cpip.crt:/etc/ssl/git-certs/cpip.crt", "/mnt/data/mri:/data/", "/mnt/data/mri/ria-dicoms:/data/ria-dicoms:ro", "/var/run/docker.sock:/var/run/docker.sock"] 
+                  shm_size = 0
+                  network_mtu = 0
 
-#. Common errors/solutions when dealing with SSL could be found `here. <https://docs.gitlab.com/omnibus/settings/ssl/ssl_troubleshooting.html>`_
+      .. important::
+
+         For errors regarding ``ERROR: Job failed: failed to pull image "<registry_hostname>/ni-dataops/containers/heudiconv:latest" with specified policies [always]: Error response from daemon: Head "https://ITAPPCPIPDT01.uc.ucalgary.ca:5050/v2/ni-dataops/containers/heudiconv/manifests/latest": denied: access forbidden (manager.go:250:0s)`` docker swarm for the deployment `this post <https://www.awaimai.com/en/3100.html>`_ mentions how to solve it.
+
+         .. code:: yaml
+
+            # All you need to do is add the following configurtion to the gitlab runners config in /etc/gitlab-runner/config.toml
+            [[runners]]
+            #....
+            [runners.docker]
+               pull_policy = ["if-not-present", "always"]
+               #...
+
+   #. Common errors/solutions when dealing with SSL could be found `here. <https://docs.gitlab.com/omnibus/settings/ssl/ssl_troubleshooting.html>`_
 
 .. _debbugg_it:
 
