@@ -27,4 +27,8 @@ Below is a description of the ports used by the different services being run in 
 * MinIO:
     * 9000:9000
     * 9090:9090    
+* Docker Swarm:
+    * TCP port 2377 for cluster management communications
+    * TCP and UDP port 7946 for communication among nodes
+    * UDP port 9789 for overlay network traffic
 
