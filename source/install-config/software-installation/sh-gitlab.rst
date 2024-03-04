@@ -1,5 +1,5 @@
-Self-hosted GitLab Setup
-=============================
+Self-hosted GitLab Installation and Setup
+===============================
 
 Montreal
 +++++++++++++++++++
@@ -27,10 +27,127 @@ Installation
 
 
 Calgary
-+++++++++++++++++++
++++++++
 
-Installation
-~~~~~~~~~~~~~
+.. _docker_swarm_gitlab:
+
+Docker Swarm GitLab Installation
+--------------------------------
+
+#. Follow the steps for the the creation of selfsigned certificates that was previously :ref:`outlined <creationofssl>`. Or not, if you already have certificates for the required hostnames.
+
+#. For Calgary's setup we will deploy GitLab, StoreSCP, and MinIO in the manager node, and the gitlab-runners in a worker node (data server).
+
+#. Create a ``docker swarm manager node`` to deploy GitLab, StoreSCP, and MinIO.
+
+   .. code:: bash
+
+      docker swarm init --dport 9789
+
+   .. warning::
+      
+      Be aware of the issues with docker swarm in a `VMWare virutal machine <https://portal.portainer.io/knowledge/known-issues-with-vmware>`_.
+
+#. SSH into the worker node (processing server) and run the following command with the information obtained from the previous command.
+
+   .. code:: bash
+
+      docker swarm join --token TOKEN --advertise-addr <IP-ADDRESS-OF-WORKER-1> <IP-ADDRESS-OF-MANAGER>:2377
+
+#. Create an attachable docker overlay network. The subnet/gateway was defined to avoid potential issues with the port ranges used by the University of Calgary.
+
+   .. code:: bash
+
+      docker network create --driver=overlay --attachable cpip-network --subnet=192.11.0.0/16 --gateway=192.11.0.2
+
+
+#. Clone the UNF repository `ni-dataops/stack <https://gitlab.unf-montreal.ca/ni-dataops/stack.git>`_.
+
+   .. note:: 
+
+      If you are using ``self-signed certificates``, you might use the selfsigned-cert branch, for this branch custom docker images will need to be created before stack deployment.
+
+#. Create the necesary docker secrets.
+
+    .. code-block:: bash
+
+        sudo docker secrets create name-of-secret secret-file
+        # secret-file can be any text file containing the needed information.
+        # OR
+        echo "xxxxxxxxxx" | docker secret create name-of-secret -
+        # make sure to remove the entry from the server's history
+
+#. Make sure that the docker-compose file point the service deployment to the manager node using the constraints and attached to the right network. 
+
+    .. code:: yml
+
+        deploy:
+        placement:
+            constraints:
+            - node.hostname == manager-node.ca            
+      
+    .. code:: yml
+      
+         networks:
+            - cpip_network
+      networks:
+      cpip_network:
+         external: true
+
+#. Do the modifications necesary to set your `hostname` and run the command:
+
+   .. code:: 
+
+      sudo GITLAB_HOME=/srv/gitlab/ docker stack deploy -c docker_compose.gitlab.yml cpip
+
+   .. important:: 
+
+      In docker swarm, in order to mount a volume to a container, such volume must exist. This is not necessary using docker compose where directories are created if missing.
+
+.. note:: 
+
+   You can find information on how to change password using the terminal in `this disscusion <https://stackoverflow.com/questions/55747402/docker-gitlab-change-forgotten-root-password>`_.
+
+      .. code:: ruby
+
+         #You will need to do this through the ruby console
+         user = User.where(id: 1).first
+         user.password = 'your secret'
+         user.password_confirmation = 'your secret'
+         user.state = 'active'
+         user.save!
+         exit
+
+#. More documentation on how to automatically set the instance wide CI/CD gitlab variables to come.
+
+#. There will be a way to standardize/automatically set the instance wide CI/CD gitlab variables  using python scripts and json configuration files from the `ni-dataops/stack/gitlab_server/config <https://gitlab.unf-montreal.ca/ni-dataops/stack/-/tree/main/gitlab_server/config?ref_type=heads>`_ UNF repository.
+
+.. code:: 
+
+   #This way of creating ci-variables will involve running something like this
+
+   python3 create_gitlab_variable.py ci-variable.json
+
+
+#. Follow the previous steps to :ref:`configure gitlab <gitlab_config>`.
+
+Debbugging
+~~~~~~~~~~
+
+#. Allow a new ssh port in the system can be achieved. Follow `this post <https://stackoverflow.com/questions/11672525/centos-6-3-ssh-bind-to-port-xxx-on-0-0-0-0-failed-permission-denied>`_ for more information.
+#. There is an error when using docker swarm for the deployment `this post <https://www.awaimai.com/en/3100.html>`_ mentions how to solve it.
+
+   .. code:: yaml
+
+      # All you need to do is add the following configurtion to the gitlab runners config in /etc/gitlab-runner/config.toml
+      [[runners]]
+      #....
+      [runners.docker]
+         pull_policy = ["if-not-present", "always"]
+         #...
+
+Direct GitLab Installation
+--------------------------
 
 We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`_ for installing gitlab in centos/redhat 8, it also works for redhat 9. It is imporant to make the following considerations when following the steps.
 
@@ -74,7 +191,7 @@ We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`
 
          a. First to docker: follow the steps suggested in `this post <https://forum.gitlab.com/t/cannot-login-docker-with-self-signed-certificate/81488>`_.
 
-            a. Copy the cerficate you created in :ref:`Create a self-signed certificate <creationofssl>` into the /etc/docker/daemon.json file, create if it does not exist.
+            a. Copy the cerficate you created in :ref:`Create a self-signed certificate <creationofssl>` into the /etc/docker/cert.d folder, create if it does not exist.
 
                .. code-block:: bash
 
@@ -95,11 +212,6 @@ We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`
                sudo cp /etc/gitlab/ssl/cpip.ahs.ucalgary.ca.crt /etc/pki/ca-trust/source/anchors/cpip.ahs.ucalgary.ca.crt
                sudo update-ca-trust extract
 
-      
-   #. **Installation of GitLab using docker.**
-   
-      The installation of pretty much anything is possible using Docker. All you need to do is follow their `installation guide <https://docs.gitlab.com/ee/install/docker.html#install-gitlab-using-docker-compose>`_ using docker compose. I was not able to make this work on Calgary's servers using RedHat.
-
       .. note:: 
 
          You can find information on how to change password using the terminal in `this disscusion <https://stackoverflow.com/questions/55747402/docker-gitlab-change-forgotten-root-password>`_.
@@ -113,6 +225,8 @@ We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`
                user.state = 'active'
                user.save!
                exit
+
+.. _gitlab_config:
 
 Configuration
 ~~~~~~~~~~~~~
@@ -142,7 +256,7 @@ After installation, there are additional configurations required before the pipe
 
 #. Create some users which will be necessary to run some of the task like DICOM to BIDS conversion, processing, etc.
 
-   a. bids_bot
+   a. bids_bot = Admin level so it can access all repos
    b. dicom_bot = Admin level because its token need to have elevated privileges to use with the GitLab API.
 
 #. ``Install MinIO`` in you data server following :ref:`this guide <minio>`.
@@ -183,3 +297,13 @@ Debbugging
 ~~~~~~~~~~
 
 #. Allow a new ssh port in the system can be achieved. Follow `this post <https://stackoverflow.com/questions/11672525/centos-6-3-ssh-bind-to-port-xxx-on-0-0-0-0-failed-permission-denied>`_ for more information.
+#. There is an error when using docker swarm for the deployment `this post <https://www.awaimai.com/en/3100.html>`_ mentions how to solve it.
+
+   .. code:: yaml
+
+      # All you need to do is add the following configurtion to the gitlab runners config in /etc/gitlab-runner/config.toml
+      [[runners]]
+      #....
+      [runners.docker]
+         pull_policy = ["if-not-present", "always"]
+         #...

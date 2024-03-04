@@ -1,10 +1,74 @@
 .. _storescp:
 
-StoreSCP Using Docker Setup
-=============================
+StoreSCP Installation and Setup
+===============================
 
 Calgary
 +++++++
+
+Docker Swarm Installation
+-------------------------
+
+#. Clone the unf `stack repository <https://gitlab.unf-montreal.ca/ni-dataops/stack.git>`_.
+
+#. Move into the proper folder of the repository.
+
+    .. code-block:: bash
+
+        cd stack/storage_server
+
+#. If you are using self signed certificates, switch into the selfsigned-certs branch and make sure that the storescp image was built including the selfsigned certificates.
+
+#. Create the required secrets.
+
+    .. code-block:: bash
+
+        sudo docker secrets create name-of-secret secret-file
+        # secret-file can be any text file containing the needed information.
+        # OR
+        echo "xxxxxxxxxx" | docker secret create name-of-secret -
+        # make sure to remove the entry from the server's history
+
+.. important:: 
+   
+   Make sure that the docker-compose file is pointing to those secrets for their use inside the container.
+
+.. important::
+   Make sure that the docker-compose file point the service deployment to the manager node using the constraints. 
+
+      .. code:: yml
+
+         deploy:
+         placement:
+               constraints:
+               - node.hostname == manager-node.ca
+
+
+
+#. Run the docker command 
+
+    .. code-block:: bash
+
+        docker stack deploy --compose-file docker-compose.dicom-rcv.yml cpip
+
+    .. important:: 
+
+        In docker swarm in order to mount a volume to a container, such volume must exist. This is not necessary using docker compose where directories are created if missing.
+
+#. More documentation on how to automatically and securely deploy the storescp enviromental varibles using ``docker secrets`` to come.
+
+#. Debbugging
+
+    .. note:: 
+
+        Check `this <https://stackoverflow.com/questions/55087903/docker-logs-errors-of-services-of-stack-deploy>`_ post for debbugging.
+
+    .. important:: 
+
+        In docker swarm, in order to mount a volume to a container, such volume must exist. This is not necessary using docker compose where directories are created if missing.
+
+Docker Compose Installation
+---------------------------
 
 StoreSCP stands for ``"Store Service Class Provider"``. In the DICOM network communication model, a Service Class Provider (SCP) is an entity that provides services to a Service Class User (SCU). In this case, ``storescp acts as a receiver (server)`` in a network exchange where it accepts DICOM images or data sent over the network from a sender (client), which is typically a SCU like a PACS system, MRI or CT scanner, or another workstation.
 

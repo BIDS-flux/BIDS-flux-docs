@@ -1,10 +1,69 @@
 .. _minio:
 
-MinIO Installation
-=============================
+MinIO Installation and Setup
+============================
 
 Calgary
 +++++++
+
+Docker swarm installation
+-------------------------
+ 
+#. Clone the unf `stack repository <https://gitlab.unf-montreal.ca/ni-dataops/stack.git>`_.
+
+#. Move into the proper folder of the repository.
+
+    .. code-block:: bash
+
+        cd stack/storage_server
+
+#. If using selfsigned certs, the installation requires the creation of self-signed certificates using the certgen tool described in intallation :ref:`option 2 <option2>` further down in this page.
+
+#. Create the other secrets required.
+
+    .. code-block:: bash
+
+        sudo docker secrets create name-of-secret secret-file
+        # secret-file can be any text file containing the needed information.
+        # OR
+        echo "xxxxxxxxxx" | docker secret create name-of-secret -
+        # make sure to remove the entry from the server's history
+
+#. Make sure that the docker-compose file is pointing to those secrets for their use inside the container.
+
+#. Make sure that the docker-compose file point the service deployment to the manager node using the constraints. 
+
+    .. code:: yml
+
+        deploy:
+        placement:
+            constraints:
+            - node.hostname == manager-node.ca
+
+#. Run the docker command 
+
+    .. code-block:: bash
+
+        docker stack deploy --compose-file docker-compose.minio.yml cpip
+
+    .. important:: 
+
+        In docker swarm, in order to mount a volume to a container, such volume must exist. This is not necessary using docker compose where directories are created if missing.
+        
+#. Debbugging
+
+    .. note:: 
+
+        Check `this <https://stackoverflow.com/questions/55087903/docker-logs-errors-of-services-of-stack-deploy>`_ post for debbugging.
+
+    .. important:: 
+
+        In docker swarm in order to mount a volume to a container, such volume must exist. This is not necessary using docker compose where directories are created if missing.
+
+.. _option2:
+
+Option 2: Installation Using the Linux Release Packages
+-------------------------------------------------------
 
 You can find the installation guides for the different operating systems in this `documentation <https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html#minio-snsd>`_.
 
@@ -102,7 +161,8 @@ You can find the installation guides for the different operating systems in this
 
         .. code-block:: bash
 
-            certgen -host "139.48.221.19:9000,minio.ahs.ucalgary.ca"
+            #for approx 10 years
+            certgen -duration 220000h0m0s -host "139.48.221.19:9000,minio.ahs.ucalgary.ca,minio.ahs.ucalgary.ca:9000" -
             #move them to the certs folder
             mv private.key ~/.minio/certs/
             mv public.crt ~/.minio/certs/
@@ -145,41 +205,3 @@ You can find the installation guides for the different operating systems in this
     #. Creation and managing of users.
 
         There are different ways to create and manage users, for more information checkout the `mc admin tool <https://min.io/docs/minio/linux/reference/minio-mc-admin>`_.
-
-Option 2: Docker swarm installation
------------------------------------
- 
-#. Clone the unf `stack repository <https://gitlab.unf-montreal.ca/ni-dataops/stack.git>`_.
-
-#. Move into the proper folder of the repository.
-
-    .. code-block:: bash
-
-        cd stack/storage_server
-
-#. Calgary installation requires the creation of self-signed certificates using the certgen tool previously described.
-
-#. Make sure that the docker.compose file is pointing to those secrets for their use inside the container.
-
-#. Create the other secrets required.
-
-    .. code-block:: bash
-
-        sudo docker secrets create name-of-secret secret-file
-        # secret-file can be any text file containing the needed information.
-
-#. Run the docker command
-
-    .. code-block:: bash
-
-        docker stack deploy --compose-file docker-compose.minio.yml gitlab
-
-#. Debbugging
-
-    .. note:: 
-
-        Check `this <https://stackoverflow.com/questions/55087903/docker-logs-errors-of-services-of-stack-deploy>`_ post for debbugging.
-
-    .. note:: 
-
-        In docker swarm in order to mount a volume to a container, such volume must exist. This is not necessary using docker compose where directories are created if missing.
