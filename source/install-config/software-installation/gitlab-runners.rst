@@ -4,15 +4,15 @@ GitLab Runners Installation and Setup
 =====================================
 
 Calgary
-+++++++
+-------
 
 For Calgary we will use a docker swarm deployment.
 
-#. Clone the UNF repository `ni-dataops/stack <https://gitlab.unf-montreal.ca/ni-dataops/stack.git>`_ into the `manager and worker nodes`.
+#. Clone the UNF repository `ni-dataops/stack <https://gitlab.unf-montreal.ca/ni-dataops/stack.git>`_ into the ``manager and worker nodes``.
 
-#. If using the selfsigned-cert branch make sure to build the docker images in the worker node (processing server). 
+#. If using the selfsigned-cert branch make sure to build the docker images in the ``worker node`` (processing server), which is were this service will be deployed. 
 
-#. SSH into the manager node (data server) and run de following:
+#. SSH into the ``manager node`` (data server) and run de following:
 
    .. code:: 
 
@@ -25,11 +25,24 @@ For Calgary we will use a docker swarm deployment.
       deploy:
       placement:
          constraints:
-         - node.hostname == worker-node.ca
+           - node.hostname == worker-node.ca
 
-#. More documentation on how to automatically deploy the gitlab runners to come.
+#. There will be a way to standardize the gitlab-runner registration using python scripts and json configuration files from the `ni-dataops/stack/processing <https://gitlab.unf-montreal.ca/ni-dataops/stack/-/tree/main/processing_server/config?ref_type=heads>`_ UNF repository.
 
-#. Provitionally the folowing instructions will guide on the creation of the requided images and the registration of the instance wide gitlab-runners.
+.. code:: 
+
+   #This way of creating runners will involve running something like this
+
+   python3 runner_registration.py runner_configuration.json cpip_gitlab-runner.x.xxxxxxxxxxxxxxxxxxxxxxxxx 
+
+   #where cpip_gitlab-runner.x.xxxxxxxxxxxxxxxxxxxxxxxxx refers to the gitlab-runner container name deployed. 
+
+#. To register instance wide GitLab runners you can only do it directly `generating a runner authentication token from the console <https://docs.gitlab.com/runner/register/#register-with-a-runner-authentication-token>`_. There is another method using a runner registration token, but it has been `deprecated <https://docs.gitlab.com/runner/register/#register-with-a-runner-registration-token-deprecated>`_.
+
+Old way of doing this
+^^^^^^^^^^^^^^^^^^^^^
+
+#. Provisionally, the folowing instructions will guide on the creation of the requided images and the registration of the instance wide gitlab-runners.
 
    Either clone the repository: `https://gitlab.com/cal_cpip/calgary-servers.git <https://gitlab.com/cal_cpip/calgary-servers.git>`_ and run the following command:
 
