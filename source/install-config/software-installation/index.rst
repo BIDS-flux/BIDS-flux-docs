@@ -16,6 +16,7 @@ The setup of the C-PIP pipeline at the independent sites will require slightly d
    gitlab-runners
    minio
    storescp
+   networking
    # Add more subsections as needed
    
 .. note::
