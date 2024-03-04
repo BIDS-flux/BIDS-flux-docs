@@ -95,6 +95,15 @@ Docker Swarm GitLab Installation
 
 #. More documentation on how to automatically set the instance wide CI/CD gitlab variables to come.
 
+#. There will be a way to standardize/automatically set the instance wide CI/CD gitlab variables  using python scripts and json configuration files from the `ni-dataops/stack/gitlab_server/config <https://gitlab.unf-montreal.ca/ni-dataops/stack/-/tree/main/gitlab_server/config?ref_type=heads>`_ UNF repository.
+
+.. code:: 
+
+   #This way of creating ci-variables will involve running something like this
+
+   python3 create_gitlab_variable.py ci-variable.json
+
+
 #. Follow the previous steps to :ref:`configure gitlab <gitlab_config>`.
 
 Debbugging

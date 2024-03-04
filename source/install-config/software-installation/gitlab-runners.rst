@@ -27,7 +27,7 @@ For Calgary we will use a docker swarm deployment.
          constraints:
            - node.hostname == worker-node.ca
 
-#. There will be a way to standardize the gitlab-runner registration using python scripts and json configuration files from the `ni-dataops/stack/processing <https://gitlab.unf-montreal.ca/ni-dataops/stack/-/tree/main/processing_server/config?ref_type=heads>`_ UNF repository.
+#. There will be a way to standardize the gitlab-runner registration using python scripts and json configuration files from the `ni-dataops/stack/processing_server/config <https://gitlab.unf-montreal.ca/ni-dataops/stack/-/tree/main/processing_server/config?ref_type=heads>`_ UNF repository.
 
 .. code:: 
 
