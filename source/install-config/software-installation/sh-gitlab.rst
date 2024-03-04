@@ -5,7 +5,7 @@ Montreal
 +++++++++++++++++++
 
 Installation
-~~~~~~~~~~~~~
+------------
 
 .. _creationofssl:
 
@@ -132,7 +132,7 @@ Docker Swarm GitLab Installation
 #. Follow the previous steps to :ref:`configure gitlab <gitlab_config>`.
 
 Debbugging
-~~~~~~~~~~
+^^^^^^^^^^
 
 #. Allow a new ssh port in the system can be achieved. Follow `this post <https://stackoverflow.com/questions/11672525/centos-6-3-ssh-bind-to-port-xxx-on-0-0-0-0-failed-permission-denied>`_ for more information.
 #. There is an error when using docker swarm for the deployment `this post <https://www.awaimai.com/en/3100.html>`_ mentions how to solve it.
@@ -229,7 +229,7 @@ We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`
 .. _gitlab_config:
 
 Configuration
-~~~~~~~~~~~~~
+-------------
 
 After installation, there are additional configurations required before the pipeline is ready to process images.
 
