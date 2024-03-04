@@ -36,7 +36,11 @@ Docker Swarm GitLab Installation
       docker network create --driver=overlay --attachable cpip-network --subnet=192.11.0.0/16 --gateway=192.11.0.2
 
 
-#. Clone the UNF repository `ni-dataops/stack <https://gitlab.unf-montreal.ca/ni-dataops/stack.git>`_. Might use the selfsigned-cert branch depending on following development for which some custom docker images will need to be created before deployment.
+#. Clone the UNF repository `ni-dataops/stack <https://gitlab.unf-montreal.ca/ni-dataops/stack.git>`_.
+
+   .. note:: 
+
+      If you are using ``self-signed certificates``, you might use the selfsigned-cert branch, for this branch custom docker images will need to be created before stack deployment.
 
 #. Create the necesary docker secrets.
 
