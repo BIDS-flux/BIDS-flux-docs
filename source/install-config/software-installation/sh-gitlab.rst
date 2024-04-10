@@ -104,29 +104,29 @@ Docker Swarm GitLab Installation
 
       In docker swarm, in order to mount a volume to a container, such volume must exist. This is not necessary using docker compose where directories are created if missing.
 
-.. note:: 
+   .. note:: 
 
-   You can find information on how to change password using the terminal in `this disscusion <https://stackoverflow.com/questions/55747402/docker-gitlab-change-forgotten-root-password>`_.
+      You can find information on how to change password using the terminal in `this disscusion <https://stackoverflow.com/questions/55747402/docker-gitlab-change-forgotten-root-password>`_.
 
-      .. code:: ruby
+         .. code:: ruby
 
-         #You will need to do this through the ruby console
-         user = User.where(id: 1).first
-         user.password = 'your secret'
-         user.password_confirmation = 'your secret'
-         user.state = 'active'
-         user.save!
-         exit
+            #You will need to do this through the ruby console
+            user = User.where(id: 1).first
+            user.password = 'your secret'
+            user.password_confirmation = 'your secret'
+            user.state = 'active'
+            user.save!
+            exit
 
 #. More documentation on how to automatically set the instance wide CI/CD gitlab variables to come.
 
 #. There will be a way to standardize/automatically set the instance wide CI/CD gitlab variables  using python scripts and json configuration files from the `ni-dataops/stack/gitlab_server/config <https://gitlab.unf-montreal.ca/ni-dataops/stack/-/tree/main/gitlab_server/config?ref_type=heads>`_ UNF repository.
 
-.. code:: 
+   .. code:: 
 
-   #This way of creating ci-variables will involve running something like this
+      #This way of creating ci-variables will involve running something like this
 
-   python3 create_gitlab_variable.py ci-variable.json
+      python3 create_gitlab_variable.py ci-variable.json
 
 
 #. Follow the previous steps to :ref:`configure gitlab <gitlab_config>`.
@@ -237,7 +237,7 @@ After installation, there are additional configurations required before the pipe
 
 #. Create an empty new project called ni-dataops.
 
-#. Clone the `ni-dataops repository https://gitlab.com/cal_cpip/ni-dataops.git <https://gitlab.com/cal_cpip/ni-dataops.git>`_ and push upstream to you self-hosted gitlab. Access (token-access) to this repository should be allowed from other repositories, this will permit newly created repositories containing data to access the processing pipelines.
+#. Clone the `ni-dataops ci-pipelines and containers repositories from https://gitlab.unf-montreal.ca/ni-dataops <https://gitlab.unf-montreal.ca/ni-dataops>`_ and push upstream to you self-hosted gitlab. Access (token-access) to this repository should be allowed from other repositories, this will permit newly created repositories containing data to access the processing pipelines.
 
    .. note:: 
 
