@@ -48,6 +48,13 @@ Docker Swarm GitLab Installation
 
       
       sudo docker swarm join --token TOKEN server-1.internal.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:2377
+   
+   You can then verify the status of the swarm on the manager node running:
+
+   .. code:: bash
+
+      sudo docker ps
+
    .. warning::
       
       You must use the hostname for server-1 on VLAN4 here identified by the "internal" keyword.
@@ -58,6 +65,12 @@ Docker Swarm GitLab Installation
 
       docker network create --driver=overlay --attachable cpip-network --subnet=192.11.0.0/16 --gateway=192.11.0.2
 
+   You can list the docker networks and get more specific status information on the cpip-network using:
+
+   .. code:: bash
+      
+      sudo docker network ls
+      sudo docker network inspect cpip-network
 
 #. Clone the UNF repository `ni-dataops/stack <https://gitlab.unf-montreal.ca/ni-dataops/stack.git>`_.
 
