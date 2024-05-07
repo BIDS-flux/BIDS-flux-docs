@@ -82,6 +82,34 @@ Docker Swarm GitLab Installation
 
    Under ``deploy`` there is a script called ``create_directory.sh`` and ``generate_secrets.sh``. Run the directory creation          script, and then generate the secrets. Make sure that you have a folder under ``~/ni-dataops/stack/secrets`` where your            secrets are located in raw text form i.e. ``gitlab_root_password``.
 
+   Make sure that the ``generate_secrets.sh`` script generates all the required secrets for each service, as can be seen in the docker compose config yaml file:
+
+   .. code:: bash
+
+      secrets:
+        gitlab_root_password:
+          file: ./secrets/gitlab_root
+        gitlab_token_local:
+          file: ./secrets/gitlab_local
+        gitlab_token_remote:
+          file: ./secrets/gitlab_remote
+        cert:
+          file: ./secrets/bundle.crt
+        key:
+          file: ./secrets/cert.key
+        minio_pass:
+          file: ./secrets/minio_pass
+        minio_conf:
+          file: ./secrets/mc.conf
+        dicom_bot_token:
+          file: ./secrets/dicom_token
+        s3_id:
+          file: ./secrets/s3_id
+        s3_key:
+          file: ./secrets/s3_key
+        ssh_passphrase:
+          file: ./secrets/passphrase
+
 #. Make sure that the docker-compose file point the service deployment to the manager node using the constraints and attached to the right network. 
 
     .. code:: yml
