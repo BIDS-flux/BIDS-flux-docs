@@ -76,17 +76,11 @@ Docker Swarm GitLab Installation
 
    .. note:: 
 
-      If you are using ``self-signed certificates``, you might use the selfsigned-cert branch, for this branch custom docker images will need to be created before stack deployment.
+      If you are using ``self-signed certificates``, you might use the selfsigned-cert branch, for this branch custom docker images will need to be created before stack deployment. Update: use montreal branch.
 
-#. Create the necesary docker secrets.
+#. Create the necessary docker secrets.
 
-    .. code-block:: bash
-
-        sudo docker secrets create name-of-secret secret-file
-        # secret-file can be any text file containing the needed information.
-        # OR
-        echo "xxxxxxxxxx" | docker secret create name-of-secret -
-        # make sure to remove the entry from the server's history
+   Under ``deploy`` there is a script called ``create_directory.sh`` and ``generate_secrets.sh``. Run the directory creation          script, and then generate the secrets. Make sure that you have a folder under ``~/ni-dataops/stack/secrets`` where your            secrets are located in raw text form i.e. ``gitlab_root_password``.
 
 #. Make sure that the docker-compose file point the service deployment to the manager node using the constraints and attached to the right network. 
 
