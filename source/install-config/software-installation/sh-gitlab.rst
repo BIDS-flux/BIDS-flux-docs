@@ -170,43 +170,7 @@ Docker Swarm GitLab Installation
 
 #. Follow the previous steps to :ref:`configure gitlab <gitlab_config>`.
 
-MinIO Storage Configuration
----------------------------
 
-#. Make sure to install the MinIO client ``mc`` here: https://min.io/docs/minio/linux/reference/minio-mc.html
-
-#. Add the alias using your provided MinIO api url:
-
-   .. code:: 
-   
-      mc alias set myminio https://<my-api-url> cpip 'mypassword'
-
-#. Test connection to the object store:
-
-   .. code:: 
-
-      mc ls myminio
-
-#. Perform additional operations to ensure the connection is working properly:
-
-   #. Upload a file
-   
-      .. code:: 
-
-         echo "Hello, MinIO!" > testfile.txt
-         mc cp testfile.txt myminio/your-bucket-name
-
-   #. List files in a bucket:
-
-      .. code:: 
-
-         mc ls myminio/your-bucket-name
-
-   #. Download a file:
-
-      .. code:: 
-
-         mc cp myminio/your-bucket-name/testfile.txt downloaded-testfile.txt
 
 
 Calgary
