@@ -33,7 +33,8 @@ To generate unique subject IDs for a multi-site study, you can use a combination
 A. Site-Specific Prefixes
 
 - **Site Code:** Assign a unique code or prefix for each site (e.g., SITE1, SITE2).
-- **Automated Numbering:** Use REDCap’s automated numbering feature to generate a sequential ID for each new record.
+- **Pre-Generated or Automated Numbering:** Either use a pre-generated list of numbered IDs distributed to each site, or use REDCap’s automated numbering feature to generate a sequential ID for each new record.
+- **Concatenation:** Combine the site code with the numbered ID to create a unique subject ID.
 
 **Example:**
 
