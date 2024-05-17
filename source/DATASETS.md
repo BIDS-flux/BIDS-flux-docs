@@ -37,6 +37,8 @@ To generate unique subject IDs for a multi-site study, you can use a combination
 
 2. **Use Auto-Numbering for IDs:**
    - Enable auto-numbering in project settings for the record ID field.
+   **Use a preregistered ID:**
+   - Alternatively, pre-generate a list of subject IDs for each site which is used when creating the records in REDCap.
 
 3. **Create a Calculated Field for Subject ID:**
    - Use a calculated field to concatenate the site code with the auto-numbered ID.
