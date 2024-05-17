@@ -110,6 +110,8 @@ Docker Swarm GitLab Installation
         ssh_passphrase:
           file: ./secrets/passphrase
 
+   Note that here the ``gitlab_token_local`` is the personal access token you must generate from your self-hosted gitlab, whereas ``gitlab_token_remote`` is the one you generate from the UNF gitlab instance.
+
 #. Make sure that the docker-compose file point the service deployment to the manager node using the constraints and attached to the right network. 
 
     .. code:: yml
