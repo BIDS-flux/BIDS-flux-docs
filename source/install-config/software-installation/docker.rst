@@ -45,6 +45,11 @@ Push the Docker Image to the Registry:
   
     sudo docker tag scratch-for-setup:latest server-1.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:5000/scratch-for-setup:latest
     sudo docker push server-1.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:5000/scratch-for-setup:latest
+    sudo docker build -t gitlab-runner -f Dockerfile-runner .
+    sudo docker tag gitlab-runner:latest server-1.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:5000/gitlab-runner:latest
+    sudo docker push server-1.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:5000/scratch-for-setup:latest
+
+
 
 Verify the Image in the Registry:
 
@@ -57,6 +62,7 @@ Pull the Docker Image from the Registry:
    .. code::
 
     sudo docker pull server-1.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:5000/scratch-for-setup:latest
+    sudo docker pull server-1.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:5000/gitlab-runner:latest
 
 ##. Step 1: Verify the Image is Pushed to the Registry
 
