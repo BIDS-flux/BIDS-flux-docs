@@ -39,6 +39,14 @@ Verify Configuration:
 
     sudo docker info | grep -i insecure
 
+Make sure you are logged in to the registry on both VMs/nodes:
+
+   .. code::
+
+       sudo docker login server-1.internal.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:5051
+
+
+
 Push the Docker Image to the Registry:
 
    .. code::
@@ -49,7 +57,9 @@ Push the Docker Image to the Registry:
     sudo docker tag gitlab-runner:latest server-1.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:5000/gitlab-runner:latest
     sudo docker push server-1.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:5000/scratch-for-setup:latest
 
+Note:
 
+There is a script under stack/deploy called build_tag_push_images.sh which can be used to setup the registry.
 
 Verify the Image in the Registry:
 
@@ -66,40 +76,20 @@ Pull the Docker Image from the Registry:
 
 ##. Step 1: Verify the Image is Pushed to the Registry
 
-Tag the Image for the Registry:
 
-
-   .. code::
-    
-    sudo docker tag scratch-for-setup:latest server-1.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:5000/scratch-for-setup:latest
-
-Push the Image to the Registry:
-
-sh
-Copy code
-sudo docker push server-1.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:5000/scratch-for-setup:latest
-Verify the Image in the Registry:
 List the repositories in your registry to ensure the image is there:
 
-sh
-Copy code
+
 curl http://server-1.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:5000/v2/_catalog
+
 Step 2: Configure Docker to Access the Registry
-If the registry requires authentication:
 
-Log in to the Registry:
-Use Docker to log in to your registry:
-
-sh
-Copy code
-sudo docker login server-1.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:5000
-Provide your username and password when prompted.
+If the registry requires authentication, log in to the registry (see above). Provide your username and password when prompted.
 
 Pull the Image from the Registry:
 Pull the image to verify that it is accessible:
 
-sh
-Copy code
+
 sudo docker pull server-1.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:5000/scratch-for-setup:latest
 Example Commands and Expected Outputs
 Tag the Image for the Registry:
