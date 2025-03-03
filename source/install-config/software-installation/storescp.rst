@@ -3,6 +3,18 @@
 StoreSCP Installation and Setup
 ===============================
 
+Montreal
+++++++++
+
+#. Make sure to have cloned the unf `stack repository <https://gitlab.unf-montreal.ca/ni-dataops/stack.git>`_ and switched to the ``montreal`` branch and switch to the ``stack`` repository. If you have not already, you can also go ahead and ``git clone ssh://git@gitlab.unf-montreal.ca:222/ni-dataops/containers.git`` to get the containers.
+
+#. Create a dicom data endpoint directory on the manager node (server-1):
+
+    .. code-block:: bash
+
+        mkdir -p /data/dicom_endpoint
+
+
 Calgary
 +++++++
 

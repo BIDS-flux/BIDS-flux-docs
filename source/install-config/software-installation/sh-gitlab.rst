@@ -9,9 +9,9 @@ Installation
 
 .. _creationofssl:
 
-#. **Install** `self-hosted Gitlab <https://about.gitlab.com/install/#ubuntu>`_
+#. **Install** `self-hosted Gitlab <https://about.gitlab.com/install/#ubuntu>`_ on the server acting as manager node for the docker swarm (server-1).
 
-#. **Setup** `self-signed certificates <https://docs.gitlab.com/omnibus/settings/ssl/index.html#configure-https-manually>`_
+#. **Setup** `self-signed certificates <https://docs.gitlab.com/omnibus/settings/ssl/index.html#configure-https-manually>`_ to be copied into the secrets directory (see below) on both servers.
 
 #. **Disable user creation to avoid undesired users** `follow these instructions. <https://computingforgeeks.com/disable-user-signup-on-gitlab-welcome-page/>`_
 
@@ -22,7 +22,154 @@ Installation
 
 #. **Enable a container registry with the same self-signed certificate.**
 
-#. **See Calgary instructions for the remaining steps**
+.. _docker_swarm_gitlab:
+
+Docker Swarm GitLab Installation
+--------------------------------
+
+#. Follow the steps for the the creation of selfsigned certificates that was previously :ref:`outlined <creationofssl>`. Or not, if you already have certificates for the required hostnames.
+
+#. For Montreal's setup we will deploy GitLab, StoreSCP in the manager node (server-1), and the gitlab-runners in a worker node (data/processing server-2).
+
+#. Create a ``docker swarm manager node`` to deploy GitLab, StoreSCP, and connect MinIO to the UniC object store.
+
+   .. code:: bash
+
+      sudo docker swarm init --data-path-port 9789 --advertise-addr 127.0.0.1
+
+
+   .. warning::
+      
+      Be aware of the issues with docker swarm in a `VMWare virutal machine <https://portal.portainer.io/knowledge/known-issues-with-vmware>`_.
+
+#. SSH into the worker node (processing server-2) and run the following command with the information obtained from the previous command.
+
+   .. code:: bash
+
+      
+      sudo docker swarm join --token TOKEN server-1.internal.imagerie.user-vms.cqgc.hsj.rtss.qc.ca:2377
+   
+   You can then verify the status of the swarm on the manager node running:
+
+   .. code:: bash
+
+      sudo docker ps
+
+   .. warning::
+      
+      You must use the hostname for server-1 on VLAN4 here identified by the "internal" keyword.
+
+#. Create an attachable docker overlay network. The subnet/gateway was defined to avoid potential issues with the port ranges used by the University of Calgary.
+
+   .. code:: bash
+
+      docker network create --driver=overlay --attachable cpip-network --subnet=192.11.0.0/16 --gateway=192.11.0.2
+
+   You can list the docker networks and get more specific status information on the cpip-network using:
+
+   .. code:: bash
+      
+      sudo docker network ls
+      sudo docker network inspect cpip-network
+
+#. Clone the UNF repository `ni-dataops/stack <https://gitlab.unf-montreal.ca/ni-dataops/stack.git>`_.
+
+   .. note:: 
+
+      If you are using ``self-signed certificates``, you might use the selfsigned-cert branch, for this branch custom docker images will need to be created before stack deployment. Update: use montreal branch.
+
+#. Create the necessary docker secrets.
+
+   Under ``deploy`` there is a script called ``create_directory.sh`` and ``generate_secrets.sh``. Run the directory creation          script, and then generate the secrets. Make sure that you have a folder under ``~/ni-dataops/stack/secrets`` where your            secrets are located in raw text form i.e. ``gitlab_root_password``.
+
+   Make sure that the ``generate_secrets.sh`` script generates all the required secrets for each service, as can be seen in the docker compose config yaml file. Copy these onto both servers:
+
+   .. code:: bash
+
+      secrets:
+        gitlab_root_password:
+          file: ./secrets/gitlab_root
+        gitlab_token_local:
+          file: ./secrets/gitlab_local
+        gitlab_token_remote:
+          file: ./secrets/gitlab_remote
+        cert:
+          file: ./secrets/bundle.crt
+        key:
+          file: ./secrets/cert.key
+        minio_pass:
+          file: ./secrets/minio_pass
+        minio_conf:
+          file: ./secrets/mc.conf
+        dicom_bot_token:
+          file: ./secrets/dicom_token
+        s3_id:
+          file: ./secrets/s3_id
+        s3_key:
+          file: ./secrets/s3_key
+        ssh_passphrase:
+          file: ./secrets/passphrase
+
+   Note that here the ``gitlab_token_local`` is the personal access token you must generate from your self-hosted gitlab, whereas ``gitlab_token_remote`` is the one you generate from the UNF gitlab instance. The ``bundle.crt`` and ``cert.key`` are created when generating the self-signed certificate info using:
+
+   .. code:: bash
+      
+      openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout cert.key -out bundle.crt
+
+#. Make sure that the docker-compose file point the service deployment to the manager node using the constraints and attached to the right network. 
+
+    .. code:: yml
+
+        deploy:
+        placement:
+            constraints:
+            - node.hostname == manager-node.ca            
+      
+    .. code:: yml
+      
+         networks:
+            - cpip_network
+      networks:
+      cpip_network:
+         external: true
+
+#. Do the modifications necesary to set your `hostname` and run the command:
+
+   .. code:: 
+
+      sudo GITLAB_HOME=/srv/gitlab/ docker stack deploy -c docker_compose.gitlab.yml cpip
+
+   .. important:: 
+
+      In docker swarm, in order to mount a volume to a container, such volume must exist. This is not necessary using docker compose where directories are created if missing.
+
+   .. note:: 
+
+      You can find information on how to change password using the terminal in `this disscusion <https://stackoverflow.com/questions/55747402/docker-gitlab-change-forgotten-root-password>`_.
+
+         .. code:: ruby
+
+            #You will need to do this through the ruby console
+            user = User.where(id: 1).first
+            user.password = 'your secret'
+            user.password_confirmation = 'your secret'
+            user.state = 'active'
+            user.save!
+            exit
+
+#. More documentation on how to automatically set the instance wide CI/CD gitlab variables to come.
+
+#. There will be a way to standardize/automatically set the instance wide CI/CD gitlab variables  using python scripts and json configuration files from the `ni-dataops/stack/gitlab_server/config <https://gitlab.unf-montreal.ca/ni-dataops/stack/-/tree/main/gitlab_server/config?ref_type=heads>`_ UNF repository.
+
+   .. code:: 
+
+      #This way of creating ci-variables will involve running something like this
+
+      python3 create_gitlab_variable.py ci-variable.json
+
+
+#. Follow the previous steps to :ref:`configure gitlab <gitlab_config>`.
+
 
 
 
