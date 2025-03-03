@@ -6,12 +6,10 @@
    :caption: 🪄 Docs
 
    Introduction to the project <overview/index>
-   Installation and Configuration <install-config/index>
+   Installation and configuration <install-config/index>
    MRI <mri/index>
-   Heterogeneous Data <heterogeneous-data/index>
-   GitLab Pipeline Deployment <gitlab-deployment/index>
-   Documentation <documentation/index>
+   Heterogeneous data <heterogeneous-data/index>
+   GitLab pipeline deployment <gitlab-deployment/index>
+   User documentation <user-docs/index>
    Appendices <appendices/index>
    Project Updates <project-updates/index>
-
-
