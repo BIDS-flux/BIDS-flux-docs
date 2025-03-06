@@ -1,7 +1,7 @@
 # Releases
 
-## 2024-alpha
+## 2025-alpha
 
-C-PIP `2024-alpha` release includes the following sub-datasets:
+BIDS-flux-docs `2025-alpha` release includes the following sub-datasets:
 
  * `anat` : with up to X sessions per participant

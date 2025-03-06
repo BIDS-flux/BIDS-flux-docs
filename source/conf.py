@@ -17,12 +17,12 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'C-PIP'
-copyright = '2023, C-PIP team'
-author = 'C-PIP team'
+project = 'BIDS-flux-docs'
+copyright = '2023, BIDS-flux'
+author = 'C-PIP NeuroInformatics Team'
 
 # The full version, including alpha/beta/rc tags
-release = '2023-beta'
+release = '2025-beta'
 master_doc = 'index'
 
 # -- General configuration ---------------------------------------------------
@@ -52,7 +52,7 @@ exclude_patterns = []
 html_theme = 'sphinx_rtd_theme'
 
 # tab name
-html_short_title = 'CPIP'
+html_short_title = 'BIDS-flux-docs'
 
 # The logo
 html_logo = ''
