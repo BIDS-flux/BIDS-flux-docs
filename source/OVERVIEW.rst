@@ -53,6 +53,10 @@ Reusable
 
    This documentation is a work in progress, and we are continuously updating and expanding it to provide you with the most comprehensive and helpful information. Thank you for your patience.
 
+Software Stack
+--------------
+**BIDS-flux** is built on the following software stack:
+
 
 If you have any questions or need assistance, feel free to [link to contact information or support].
 
