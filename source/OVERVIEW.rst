@@ -2,7 +2,7 @@ BIDS-flux: A Scalable FAIR Data Management Platform Tailored for Neuroimaging Re
 =====
 .. image:: img/Overview.png
 
-Welcome to the documentation for the BIDS-flux neuroinformatics platform. This documentation provides an in-depth guide to the deployment, functionality, and usage of the infraestructure.
+Welcome to the documentation for the BIDS-flux neuroinformatics platform. This documentation provides an in-depth guide to the deployment, configuration, functionality, and usage of the BIDS-flux infraestructure.
 
 About
 -----
@@ -55,7 +55,31 @@ Reusable
 
 Software Stack
 --------------
+
 **BIDS-flux** is built on the following software stack:
+
+Local Infrastructure
+^^^^^^^^^^^^^^^^^^^^
+- **Mercure** - Data ingestion and curation https://mercure-imaging.org/docs/
+- **Datalad** - Version control for large-scale data https://docs.datalad.org/en/stable/index.html
+- **GitLab** - Workflow orchestration and version control https://docs.gitlab.com/
+- **MinIO** - Object storage for raw and processed data https://min.io/docs/minio/linux/index.html
+- **Heudiconv** - DICOM to BIDS conversion https://heudiconv.readthedocs.io/en/latest/
+- **NiPreps** - Neuroimaging PREProcessing toolS https://www.nipreps.org/ 
+- **BIDSApps** - Containerized reproducible processing workflows
+- **NeuroLibre** (comming soon) - Executable, reproducible preprints
+- **DataVerse** (comming soon) - Long-term archival and publication
+- **BinderHub** (comming soon) - Interactive exploration and analysis
+
+Centralized Infrastructure
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+- **Gitea** - Workflow orchestration and version control https://docs.gitea.com/
+- **MinIO** - Object storage for raw and processed data https://min.io/docs/minio/linux/index.html
+- **DataVerse** - Long-term archival and publication
+- **BinderHub** - Interactive exploration and analysis https://binderhub.readthedocs.io/en/latest/
+- **Keycloak** - Authentication and authorization https://www.keycloak.org/docs/latest/server_admin/index.html
+- **Traefik** - Reverse proxy and load balancer https://doc.traefik.io/traefik/
+
 
 
 If you have any questions or need assistance, feel free to [link to contact information or support].
