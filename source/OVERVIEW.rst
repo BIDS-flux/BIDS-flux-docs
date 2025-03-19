@@ -53,6 +53,8 @@ Reusable
 
    This documentation is a work in progress, and we are continuously updating and expanding it to provide you with the most comprehensive and helpful information. Thank you for your patience.
 
+.. _hardware-requirements:
+
 Hardware Requirements
 ---------------------
 
@@ -95,6 +97,7 @@ Software Stack
 Local Infrastructure
 ^^^^^^^^^^^^^^^^^^^^
 - **Docker** - Containerization and reproducibility https://docs.docker.com/
+- **Git** - Version control for code and data https://git-scm.com/doc
 - **Mercure** - Data ingestion and curation https://mercure-imaging.org/docs/
 - **Datalad** - Version control for large-scale data https://docs.datalad.org/en/stable/index.html
 - **GitLab** - Workflow orchestration and version control https://docs.gitlab.com/
@@ -109,6 +112,7 @@ Local Infrastructure
 Centralized Infrastructure
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 - **Docker** - Containerization and reproducibility https://docs.docker.com/
+- **Git** - Version control for code and data https://git-scm.com/doc
 - **Gitea** - Workflow orchestration and version control https://docs.gitea.com/
 - **MinIO** - Object storage for raw and processed data https://min.io/docs/minio/linux/index.html
 - **DataCat** - Data pooling, sharing and quering platform https://datacat.readthedocs.io/en/latest/
