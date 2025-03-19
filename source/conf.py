@@ -32,7 +32,8 @@ master_doc = 'index'
 # ones.
 extensions = [
               'sphinx.ext.autosectionlabel',
-              'myst_parser'
+              'myst_parser',
+              'sphinx_copybutton',
              ]
 
 # Add any paths that contain templates here, relative to this directory.
