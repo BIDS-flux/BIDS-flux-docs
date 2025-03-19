@@ -1,4 +1,4 @@
-BIDS-flux: A Scalable FAIR Data Management Platform Tailored for Neuroimaging Research
+BIDS-flux: A Scalable FAIR Data Management Platform Tailored for Multi-site Neuroimaging Research
 =====
 .. image:: img/Overview.png
 
@@ -53,13 +53,48 @@ Reusable
 
    This documentation is a work in progress, and we are continuously updating and expanding it to provide you with the most comprehensive and helpful information. Thank you for your patience.
 
+Hardware Requirements
+---------------------
+
+The **BIDS-flux** infrastructure is designed to scale and adapt flexibly to various hardware setups, typically including:
+
+- **Two servers or virtual machines (VMs) per site**:
+  
+  - A dedicated **Data Server** for data ingestion, management, and storage.
+  - A dedicated **Processing Server** optimized for data processing and analysis.
+
+- **One centralized data repository** to aggregate data from multiple sites, enabling efficient collaboration, centralized data management, backups, and sharing of BIDS-compatible derivatives.
+
+Example Deployment: Canadian Paediatric Imaging Platform (`C-PIP <cpip.org>`_)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The **Canadian Paediatric Imaging Platform** (`C-PIP <cpip.org>`_) is a three-year longitudinal study involving approximately 750 participants. Each participant undergoes MRI scans (`MRI protocol <TODO.org>`_) annually, along with neuropsychological assessments. The resulting data and derivatives are managed according to the Brain Imaging Data Structure (BIDS) standard, with the dataset continuously expanding as additional BIDS-compatible derivatives become available.
+
+Hardware specifications for C-PIP include:
+
+**Compute resources per local server**:
+ - CPUs: Intel® Xeon® Gold processors, totaling 32 cores per server (approximately 128 vCPUs available for virtualization).
+ - RAM: 12 × 16 GB RAM modules, totaling 192 GB per server (384 GB across both servers).
+
+**Storage resources per local server**:
+ - 12 × 16TB NL-SAS HDDs (primary data storage).
+ - 2 × 480 GB M.2 SSDs in RAID 1 (OS and VM boot).
+
+**Centralized data repository**:
+ - Provides centralized data pooling from all sites, BIDS-standard data storage, derivative management, comprehensive backup, and archival capabilities. The following resources were estimated for the duration of the project.
+ .. image:: img/green-server-resources.png
+  :width: 600px
+
+This modular approach allows flexibility and scalability to efficiently handle large-scale imaging and associated data management tasks.
+
 Software Stack
 --------------
 
-**BIDS-flux** is built on the following software stack:
+**BIDS-flux** is built to work on a **Linux** operating system with the following software stack:
 
 Local Infrastructure
 ^^^^^^^^^^^^^^^^^^^^
+- **Docker** - Containerization and reproducibility https://docs.docker.com/
 - **Mercure** - Data ingestion and curation https://mercure-imaging.org/docs/
 - **Datalad** - Version control for large-scale data https://docs.datalad.org/en/stable/index.html
 - **GitLab** - Workflow orchestration and version control https://docs.gitlab.com/
@@ -73,14 +108,15 @@ Local Infrastructure
 
 Centralized Infrastructure
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+- **Docker** - Containerization and reproducibility https://docs.docker.com/
 - **Gitea** - Workflow orchestration and version control https://docs.gitea.com/
 - **MinIO** - Object storage for raw and processed data https://min.io/docs/minio/linux/index.html
+- **DataCat** - Data pooling, sharing and quering platform https://datacat.readthedocs.io/en/latest/
 - **DataVerse** - Long-term archival and publication
 - **BinderHub** - Interactive exploration and analysis https://binderhub.readthedocs.io/en/latest/
+- **JupyterHub** - Multi-user Jupyter notebook server https://jupyterhub.readthedocs.io/en/stable/
 - **Keycloak** - Authentication and authorization https://www.keycloak.org/docs/latest/server_admin/index.html
 - **Traefik** - Reverse proxy and load balancer https://doc.traefik.io/traefik/
-
-
 
 If you have any questions or need assistance, feel free to [link to contact information or support].
 
