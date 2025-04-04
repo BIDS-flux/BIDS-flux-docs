@@ -155,6 +155,10 @@ Stack Deployment Stage 1
         
         bash deploy/generate_secrets.sh
 
+    .. important::
+
+        This will create the secrets required for the deployment of the services. The secrets will only be displayed once so make sure to save them in a safe place.
+
 #. You will need to run the following command to initiate the docker swarm for the BIDSflux infraestructure. This will create a new docker stack where the docker swarm services will be deployed.
 
     .. code-block:: bash
@@ -194,7 +198,7 @@ Stack Deployment Stage 1
 
 
 
-#.  You have all BIDSflux services running with 1/1 replicas, it is time to move to the next configuration stage.
+#.  You now should have all BIDSflux services running with 1/1 replicas, so, it is time to move to the next configuration stage.
 
 
 .. _local-configuration-stage2:
@@ -204,9 +208,52 @@ Configuration Stage 2
 
 #. Run the ``mercure-setup.sh`` script in preparation for the Mercure deployment.
 
-#. Get token variables.
+    .. code-block:: bash
 
-#. Register runners.
+        bash mercure-setup.sh
+
+#. You will need to go to your browser and open the GitLab instance, log in, and create a ``GITLAB_TOKEN`` that we will need for the following steps. You can do this by going to the URL defined by your DOMAIN_NAME in the ``.env`` file."
+
+    .. code-block:: bash
+
+        https://<DOMAIN_NAME>:443
+
+
+    You will need to log in using the following credentials:
+
+    .. code-block:: bash
+
+        username: root
+        password: <gitlab_root_password> #as it was created using the deploy/generate_secrets.sh script
+
+    Once you are logged in, go to the settings and create a new `personal access token <https://docs.gitlab.com/user/profile/personal_access_tokens/#create-a-personal-access-token>`_. Make sure to select the following scopes:
+
+    .. code-block:: bash
+
+        api
+        read_user
+        read_repository
+        write_repository
+        read_registry
+        write_registry
+        read_package
+        write_package
+
+
+#. The next step is to run the ``deploy/init_ni-dataops.py`` script to finialize configuring some required users, tokens, variables, groups, and the clonning for necessary resositories from BIDS-flux.
+
+    You will need to declare the following variables in your environment:
+
+        - GITLAB_TOKEN #this was defined in the previous step where we created the personal access token
+        - BOT_EMAIL_DOMAIN #this can really be an email domain of your choice, but it is recommended to use the same as the DOMAIN_NAME
+
+    Create a python environment using the ``deploy/python-env.txt`` file. You can do this using the following command:
+
+    .. code-block:: bash
+
+        python3 -m venv --system-site-packages env
+        source env/bin/activate
+        pip install -r deploy/python-env.txt
 
 #. If you are using storescp instead of mercure you will need to properly configure these ``.env`` variables.
 
