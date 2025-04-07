@@ -7,7 +7,7 @@ This page will go through the sofware stack installation and how to get started.
 
 As explained in the :ref:`hardware requirements <hardware-requirements>` section, the BIDS-flux infrastructure recommends using two local servers to ensure secure and efficient functionality. One server should have ample storage and moderate compute power, while the other should have limited storage but high computational power. The centralized server should have robust storage and sufficient computational power to handle data from all sites.
 
-Both local and centralized infrastructures will rely on the `docker <https://docs.docker.com/>`_ engine, specifically using `docker-compose <https://docs.docker.com/compose/>`_ and `docker swarm mode <https://docs.docker.com/engine/swarm/swarm-mode/>`_ to run the services. Super user permissions will be required. Additionally, both local and centralized servers/VMs will use git for version control. Doker swarm mode was selected to take advantage of the built-in secret features and the ability to scale services across multiple servers.
+Both local and centralized infrastructures will rely on the `docker <https://docs.docker.com/>`_ engine, specifically using `docker-compose <https://docs.docker.com/compose/>`_ and `docker swarm mode <https://docs.docker.com/engine/swarm/swarm-mode/>`_ to run the services. Super user permissions will be required. Additionally, both local and centralized servers/VMs will use DataLad (which wraps Git and Git-annex) for version control. Doker swarm mode was selected to take advantage of the built-in secret features and the ability to scale services across multiple servers.
 
 Install Docker on all servers/VMs by following the official Docker documentation for your specific Linux distribution: `install docker <https://docs.docker.com/engine/install/ubuntu/>`_ and `docker compose <https://docs.docker.com/compose/install/linux/>`_. You can verify the installation with the following command:
 
@@ -16,11 +16,15 @@ Install Docker on all servers/VMs by following the official Docker documentation
     sudo docker --version
     sudo docker run hello-world
 
-Install Git in all the servers/VMs. Follow the official git documentation to `install git <https://git-scm.com/doc>`_ for your correct linux distribution. You can run the following command to check if git is installed correctly:
+Install ``DataLad`` in all the servers/VMs. Follow the official documentation to `install Datalad <https://handbook.datalad.org/en/latest/intro/installation.html>`_ for your correct linux distribution. You can run the following command to check if git is installed correctly:
 
 .. code-block:: bash
 
-    git --version
+    datalad status
+
+.. note:: 
+
+    Git and Git-annex will need to be installed for datalad to work properly follow the instructions in the `DataLad installation guide <https://handbook.datalad.org/en/latest/intro/installation.html>`_ carefully for more information.
 
 Local Infrastructure
 ^^^^^^^^^^^^^^^^^^^^
@@ -129,7 +133,7 @@ Configuration Stage 1
         # This location is usually standard but feel free to modify is required
         GITLAB_HOME=/srv/gitlab
 
-#. If you are using the recommended Mercure you will require to configure some fields of the ``config/mercure-conf/default_mercure.json``. 
+#. If you are using the recommended Mercure, you will require to configure some fields of the ``config/mercure-conf/default_mercure.json`` to: 
 
     #. The `Modules` field in the json file to properly point to the dicom-indexer image.
     #. The environment variables to be used for this containers. 
@@ -226,7 +230,7 @@ Configuration Stage 2
         username: root
         password: <gitlab_root_password> #as it was created using the deploy/generate_secrets.sh script
 
-    Once you are logged in, go to the settings and create a new `personal access token <https://docs.gitlab.com/user/profile/personal_access_tokens/#create-a-personal-access-token>`_. Make sure to select the following scopes:
+    Once you are logged in, go to the settings and create a new `personal access token <https://docs.gitlab.com/user/profile/personal_access_tokens/#create-a-personal-access-token>`_. This token will be  Make sure to select the following scopes:
 
     .. code-block:: bash
 
@@ -238,22 +242,50 @@ Configuration Stage 2
         write_registry
         read_package
         write_package
+        admin_mode
 
 
-#. The next step is to run the ``deploy/init_ni-dataops.py`` script to finialize configuring some required users, tokens, variables, groups, and the clonning for necessary resositories from BIDS-flux.
+#. The next step is to run the ``deploy/init_ni-dataops.py`` and the ``deploy/runner_registration.py`` scripts to configure required users, tokens, variables, groups, the clonning for necessary resositories from BIDS-flux, and the registration of the processing workforce the gitlab runners.
 
-    You will need to declare the following variables in your environment:
+    #. You will need to declare the following variables in your shell environment:
 
-        - GITLAB_TOKEN #this was defined in the previous step where we created the personal access token
-        - BOT_EMAIL_DOMAIN #this can really be an email domain of your choice, but it is recommended to use the same as the DOMAIN_NAME
+        - **GITLAB_TOKEN** #this was defined in the previous step where we created the personal access token
+        - **BOT_EMAIL_DOMAIN** #this can be an email domain of your choice, but it is recommended to use the same as the ``DOMAIN_NAME``.
 
-    Create a python environment using the ``deploy/python-env.txt`` file. You can do this using the following command:
+    .. note::
+
+        If you do not have python installed, you must install it using the appropriate packages for your linux distribution.
+
+    #. Create a python environment using the ``deploy/python-env.txt`` file. You can do this using the following command:
 
     .. code-block:: bash
 
-        python3 -m venv --system-site-packages env
-        source env/bin/activate
+        python3 -m venv --system-site-packages /path/to/specific/directory/env
+        source /path/to/specific/directory/env/bin/activate
         pip install -r deploy/python-env.txt
+
+    #. Once you have the python environment activated, you can run the script:
+
+        .. code-block:: bash
+
+            python deploy/init_ni-dataops.py --ci_config_path deploy/ci_variables.json
+    
+    #. Figure out what are the docker containers that are running the gitlab runners so we can used this information to register the correct runners in the correct servers.
+
+        .. code-block:: bash
+
+            sudo docker ps | grep gitlab-runner
+
+    #. And finally, run the follwoing script twice, once to register the DinD gitlab runner and another for the untaged, bids, and processing runners:
+
+        .. code-block:: bash
+
+            python deploy/runner_registration.py ~/.docker/config.json deploy/runner_configuration.json BIDSflux_gitlab-runner.x
+
+            python deploy/runner_registration.py ~/.docker/config.json deploy/dind_runner_configuration.json BIDSflux_gitlab-runner-dind.x
+
+
+
 
 #. If you are using storescp instead of mercure you will need to properly configure these ``.env`` variables.
 
