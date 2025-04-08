@@ -99,7 +99,6 @@ Each local server/VM will need to have docker engine running and should have ini
 #. The deployment of the services will be mostly automatic providing the correct configurations, nevertheless, there will still be some manual configurations that will reguire careful attention.
 
 
-.. _local-configuration-stage1:
 
 Configuration Stage 1
 ~~~~~~~~~~~~~~~~~~~~~
@@ -264,19 +263,13 @@ Configuration Stage 2
         source /path/to/specific/directory/env/bin/activate
         pip install -r deploy/python-env.txt
 
-    #. Once you have the python environment activated, you can run the script:
-
-        .. code-block:: bash
-
-            python deploy/init_ni-dataops.py --ci_config_path deploy/ci_variables.json
-    
     #. Figure out what are the docker containers that are running the gitlab runners so we can used this information to register the correct runners in the correct servers.
 
         .. code-block:: bash
 
             sudo docker ps | grep gitlab-runner
 
-    #. And finally, run the follwoing script twice, once to register the DinD gitlab runner and another for the untaged, bids, and processing runners:
+    #. Once you have the python environment created and activated. You need to run the following script twice, once to register the DinD gitlab runner which will handle task that require running docker inside a docker container like building images inside a docker container; and another time for the untaged, bids, and processing runners which will handle the main pipeline tasks like BIDS conversion, and running of derivative pipelines:
 
         .. code-block:: bash
 
@@ -284,8 +277,15 @@ Configuration Stage 2
 
             python deploy/runner_registration.py ~/.docker/config.json deploy/dind_runner_configuration.json BIDSflux_gitlab-runner-dind.x
 
+    #. After successfully registering the GitLab Runners, you can run the script which will finalize the configuration of the local GitLab instace.
 
+        .. code-block:: bash
 
+            python deploy/init_ni-dataops.py --ci_config_path deploy/ci_variables.json
+
+        .. important:: 
+
+            Make sure that you safely store the ``BIDS_API_TOKEN`` and the ``DICOM_API_TOKEN`` as you will require them for the next steps.
 
 #. If you are using storescp instead of mercure you will need to properly configure these ``.env`` variables.
 
@@ -296,7 +296,7 @@ Configuration Stage 2
         S3_URL_PATTERN='s3://s3.data-server.org/test.{ReferringPhysicianName}.{StudyDescriptionPath[1]}.dicoms'
         GITLAB_INDEXER_GROUP_TEMPLATE="{ReferringPhysicianName}/{StudyDescriptionPath[1]}"
 
-    And you will use BIDS-flux the following lines in the ``BIDS-flux.yml`` file corresponding to the service deployment.
+    Additionally, you will need to uncomment the following lines in the ``BIDS-flux.yml`` file corresponding to the service deployment.
 
     .. code-block:: bash
 
@@ -333,6 +333,8 @@ Configuration Stage 2
         #       constraints:
         #         - node.hostname == $DICOM_ENDPOINT_HOST
         #   entrypoint: ["/usr/bin/storescp", "-aet", "$STORESCP_AET", "-pm", "-od", "/tmp", "-su", "", "--eostudy-timeout", "60", "--exec-on-eostudy", "python indexer/index_dicom.py", "--gitlab-url $CI_SERVER_HOST", "--storage-remote", '$S3_URL_PATTERN', "--gitlab-group-template", '$GITLAB_INDEXER_GROUP_TEMPLATE', '#p', '$STORESCP_PORT']
+    
+    If you are using mercure, you can skip to step 2 at the end of :ref:`local-stack-deployment-stage2`.
 
 .. _local-stack-deployment-stage2:
 
@@ -345,18 +347,103 @@ Stack Deployment Stage 2
 
         # Here the -f tells docker compose which file to use, -d tells docker to run in detached mode, and up is the command to deploy the mercure services    
         sudo docker compose -f docker-compose-mercure.yml up -d
+    
+    You can also navigate to the Mercure GUI deployed in ``http://<DOMAIN_NAME>:8000`` and check the status/logs of the services there. If all services ar up you should see something like this:
 
-#. if you are using storescp then re-run the command:
+    .. image:: img/mercure-gui.png
+        :width: 600px
+
+    You will need to login using the default credentials and you will be prompted to change the password. The default credentials are:
+
+    .. code-block:: bash
+
+        username: admin
+        password: router
+
+    .. note:: 
+
+        Alternatibly, you can check if the mercure services are runnning check the logs running:
+
+        .. code-block:: bash
+
+            sudo docker ps | grep mercure #identify the mercure related containers and check the logs of the indiviudal containers
+            sudo docker logs mercure-receiver-1
+            sudo docker logs mercure-dispatcher-1
+            sudo docker logs mercure-cleaner-1
+            sudo docker logs mercure-router-1
+
+        .. note::
+
+            Refer to the `Mercure documentation <https://mercure-imaging.org/docs/>`_ for more information on how to configure the mercure services and troubleshooting.
+
+
+    In the GUI you will be able to see the status of the services, logs, and configure the routing/processing of DICOMS. Which brings us to the next step. 
+    
+    Configure the DICOM receiver rules to properly route/process the received DICOMS.
+
+    Navigate to the ``Settings`` tab and go to the ``Rules`` section. Here you will be able to configure the rules filtering based on the DICOM tags available. ``Mercure`` is very powerful and flexible. You can configure `actions` to re-route the received DICOMS to another DICOM service; to process the DICOMS, or to do both. The rules can be based on individual MRI series or based on the study (complete set of series in an MRI visit) completion, how to define series/study completion is also flexible. You can define the completion rules based time after the last transfer, or based on the received series in case of the study-wide actions.
+
+    Let go through the configuration rules of the pre-configured rule.
+    
+    .. image:: img/mercure-rules.png
+        :width: 600px
+
+    #. In the selection rule we will indicate what DICOMS will trigger this rule. In our case all dicoms which have the ``Modality`` tag set to ``MR``. This means that all the DICOMS that are received with these tags will trigger this rule.
+    #. The trigger is set to ``Completed Study``. This means that when all the series of the study are received this will trigger the action.
+    #. The action is set as ``Process Only``. This means that when the the completion criteria is met we will proceed to process the data.
+    #. The ``Completion Criteria`` is set to ``Listed Series Received``. This means that when the expected series have been received the action will be triggered. In our case we have an example of two series which's SeriesDescription is `'MRSI' and 'STAGE_preproc'`
+    #. You can also Force an action if the completion criteria is not met. This means that even if the expected series are not received, you can decide what action to perform with the data.
+
+    The next configuration needed is the ``Mercure Modules`` which are docker images that will be used to process the data received. 
+
+    .. image:: img/mercure-modules.png
+        :width: 600px 
+
+    .. note::
+
+        The imaged built for the dicom-indexer module whould have been created when we ran the ``deploy/init_ni-dataops.py`` script.
+
+    You can edit this module to better suit the needs for your project.
+
+    .. image:: img/mercure-modules2.png
+        :width: 600px 
+
+    #. Docker Tag: registry.DOMAIN_NAME_PLACEHOLDER/ni-dataops/containers/dicom_indexer:latest is the name of the docker image that was build in consecuence to the creation of the ``containers`` repository in Gitlab. Make sure to change the DOMAIN_NAME_PLACEHOLDER to the correct domain name.
+    
+    #. Environment Variables for the jobs to run whenever the module is triggered. These variables will be passed to the docker container when it is run. You can add any environment variable you want to pass to the container.
+        
+        .. code-block:: json
+
+            {
+                "CI_SERVER_HOST": "gitlab.DOMAIN_NAME_PLACEHOLDER",
+                "GITLAB_BOT_USERNAME": "bids_bot",
+                "GITLAB_BOT_EMAIL": "bids_bot@DOMAIN_NAME_PLACEHOLDER",
+                "GITLAB_TOKEN": "GITLAB_TOKEN_PLACEHOLDER",
+                "AWS_ACCESS_KEY_ID": "AWS_ACCESS_KEY_ID_PLACEHOLDER",
+                "AWS_SECRET_ACCESS_KEY": "AWS_SECRET_ACCESS_KEY_PLACEHOLDER",
+                "S3_URL_PATTERN": "s3://s3.DOMAIN_NAME_PLACEHOLDER/test.{ReferringPhysicianName}.{StudyDescription}.dicoms",
+                "GITLAB_INDEXER_GROUP_TEMPLATE": "{ReferringPhysicianName}/{StudyDescription}",
+                "GIT_SSH_PORT": 222,
+                "DEBUG": false
+            }
+
+        #. CI_SERVER_HOST: The URL of the GitLab instance where the data will be pushed. Make sure to change the DOMAIN_NAME_PLACEHOLDER to the correct domain name.
+        #. GITLAB_BOT_USERNAME: The username of the GitLab bot which should also be given access to the data being pushed. Make sure to change the DOMAIN_NAME_PLACEHOLDER to the correct domain name.
+        #. GITLAB_BOT_EMAIL: The email of the GitLab bot which should also be given access to the data being pushed.
+        #. GITLAB_TOKEN: The token of the GitLab bot which will be used to push the data ``dicom_bot``. This toke was created when we ran the ``deploy/init_ni-dataops.py`` script. You were asked to safely store this token :ref:`local-configuration-stage2`.
+        #. AWS_ACCESS_KEY_ID: The AWS access key ID for the S3 bucket where the data will be pushed. You were asked to safely store this token :ref:`local-stack-deployment-stage1` under ``s3_id``.
+        #. AWS_SECRET_ACCESS_KEY: The AWS secret access key for the S3 bucket where the data will be pushed. You were asked to safely store this token :ref:`local-stack-deployment-stage1` under ``s3_secret``.
+        #. S3_URL_PATTERN: The URL pattern for the S3 bucket where the data will be pushed to in ``MinIO``. Ideally the information used here should match the one used in the ``GITLAB_INDEXER_GROUP_TEMPLATE``.
+        #. GITLAB_INDEXER_GROUP_TEMPLATE: The template for the GitLab group where the data will be pushed. This should be the same as the one used in the ``S3_URL_PATTERN``.
+        #. GIT_SSH_PORT: The port used to connect to the GitLab instance. This should be the same as the one used in the ``.env`` file.
+        #. DEBUG: Set to true if you want to see the logs of the module when it is run. This is useful for debugging purposes.
+
+#. If you are using storescp then re-run the following command after you have uncommented the lines in the ``BIDS-flux.yml`` file.:
 
     .. code-block:: bash
         
         sudo docker stack deploy -c BIDSflux_stack.yml BIDSflux
 
-#. Run the ``deploy/init_ni-dataops.py``
-
-    .. code-block:: bash
-        
-        python deploy/init_ni-dataops.py deploy/ci_variables.json 
 
 Centralized Infrastructure
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
