@@ -5,9 +5,9 @@ Software Stack Deployment
 
 This page will go through the sofware stack installation and how to get started. 
 
-As explained in the :ref:`hardware requirements <hardware-requirements>` section, the BIDS-flux infrastructure recommends using two local servers to ensure secure and efficient functionality. One server should have ample storage and moderate compute power, while the other should have limited storage but high computational power. The centralized server should have robust storage and sufficient computational power to handle data from all sites.
+As explained in the :ref:`hardware requirements <hardware-requirements>` section, the BIDS-flux infrastructure recommends using two local servers and one centralized server to ensure secure and efficient functionality. One server should have ample storage and moderate compute power, while the other should have limited storage but high computational power. The centralized server should have robust storage and sufficient computational power to handle data from all sites.
 
-Both local and centralized infrastructures will rely on the `docker <https://docs.docker.com/>`_ engine, specifically using `docker-compose <https://docs.docker.com/compose/>`_ and `docker swarm mode <https://docs.docker.com/engine/swarm/swarm-mode/>`_ to run the services. Super user permissions will be required. Additionally, both local and centralized servers/VMs will use DataLad (which wraps Git and Git-annex) for version control. Doker swarm mode was selected to take advantage of the built-in secret features and the ability to scale services across multiple servers.
+Both local and centralized infrastructures will rely on `docker <https://docs.docker.com/>`_ , specifically using `docker-compose <https://docs.docker.com/compose/>`_ and `docker swarm mode <https://docs.docker.com/engine/swarm/swarm-mode/>`_ to run the services. ``Super user permissions will be required``. Additionally, both local and centralized servers/VMs will use DataLad (which wraps Git and Git-annex) for data management and version control. Docker swarm mode was selected to take advantage of the built-in secret features and the ability to scale services across multiple servers if necessary.
 
 Install Docker on all servers/VMs by following the official Docker documentation for your specific Linux distribution: `install docker <https://docs.docker.com/engine/install/ubuntu/>`_ and `docker compose <https://docs.docker.com/compose/install/linux/>`_. You can verify the installation with the following command:
 
@@ -24,12 +24,12 @@ Install ``DataLad`` in all the servers/VMs. Follow the official documentation to
 
 .. note:: 
 
-    Git and Git-annex will need to be installed for datalad to work properly follow the instructions in the `DataLad installation guide <https://handbook.datalad.org/en/latest/intro/installation.html>`_ carefully for more information.
+    Git and Git-annex will need to be installed for datalad to work properly. Carefully follow the instructions in the `DataLad installation guide <https://handbook.datalad.org/en/latest/intro/installation.html>`_ to install them.
 
 Local Infrastructure
 ^^^^^^^^^^^^^^^^^^^^
 
-Each local server/VM will need to have docker engine running and should have initalized a docker swarm. On the data server you will run the following command to initialize the docker swarm. The recommended breakdown is to use two servers and divide the services as follows:
+Each local server/VM will need to have docker engine running and should have initalized a docker swarm. The recommended breakdown is to use two servers and divide the services as follows:
 
    #. Data Server:
 
@@ -42,11 +42,13 @@ Each local server/VM will need to have docker engine running and should have ini
 
         a. GitLab Runner
 
-#. Create a ``docker swarm manager node`` in the ``Data Server``.
+#. On the ``Data Server`` you will run the following command to initialize the ``docker swarm manager node`` .
 
     .. code:: bash
 
         docker swarm init --dport 9789
+
+    This command will initialize the docker swarm and will return a token that you will need to run on the ``Processing Server``. The output should look something like this:
 
     .. code-block:: bash
 
@@ -66,7 +68,7 @@ Each local server/VM will need to have docker engine running and should have ini
 
     .. note:: 
 
-        Make sure that you newtork is configured correctly and that the data and processing servers/VMs can communicate with each other on the required ports by docker https://docs.docker.com/engine/swarm/swarm-tutorial/#open-protocols-and-ports-between-the-hosts.
+        Make sure that your newtork is configured correctly and that the ``data`` and ``processing servers/VMs`` can communicate with each other on the required ports by docker https://docs.docker.com/engine/swarm/swarm-tutorial/#open-protocols-and-ports-between-the-hosts.
 
 
 #. Go into the worker node (``processing server``) and run the following command with the information obtained from the previous command.
@@ -75,7 +77,7 @@ Each local server/VM will need to have docker engine running and should have ini
 
         docker swarm join --token TOKEN --advertise-addr <IP-ADDRESS-OF-WORKER-1> <IP-ADDRESS-OF-MANAGER>:2377
 
-#. Create an attachable docker overlay network. This network will be used by all the services to securely communicate.
+#. Create an attachable docker overlay network. This network will be used by all the services to securely communicate to eachother.
 
     .. code:: bash
 
@@ -88,33 +90,35 @@ Each local server/VM will need to have docker engine running and should have ini
 
         git clone https://gitlab.unf-montreal.ca/bids-flux/local-stack.git
 
-#. Also clone the following repositories for the deployment:
+    .. note:: 
 
-    .. code-block:: bash
+        You can also clone the following repositories to keep your repostiories up to date with following releases:
 
-        git clone https://gitlab.unf-montreal.ca/bids-flux/containers.git
-        git clone https://gitlab.unf-montreal.ca/bids-flux/ci-pipelines.git
+            .. code-block:: bash
+
+                git clone https://gitlab.unf-montreal.ca/bids-flux/containers.git
+                git clone https://gitlab.unf-montreal.ca/bids-flux/ci-pipelines.git
 
 
-#. The deployment of the services will be mostly automatic providing the correct configurations, nevertheless, there will still be some manual configurations that will reguire careful attention.
-
-
+#. The deployment of the services will be mostly automatic, nevertheless, there will still be some manual configurations that will require careful attention to detail.
 
 Configuration Stage 1
 ~~~~~~~~~~~~~~~~~~~~~
 
-#. Change directory into the cloned repository and follow the next steps.
+#. Change directory into the ``local-stack`` cloned repository and follow the next steps.
 
     .. code-block:: bash
         
         cd local-stack
 
 
-#. The ``.env`` file will need to be set up with the proper domain names of the Docker Swarm nodes where the individual services will be deployed. Once again, for BIDS-flux, the recommended breakdown is:
+#. The ``.env`` file will need to be set up with the proper `DOMAIN_NAME` of the Docker Swarm nodes where the individual services will be deployed. Once again, for BIDS-flux, the recommended breakdown is:
 
     Data Server: GitLab, GitLab - Runner (Docker-in-Docker), MinIO, Mercure / StoreSCP
 
     Processing Server: GitLab Runner
+
+    This is an example of what the ``.env`` file should look like:
 
     .. code-block:: bash
 
@@ -125,18 +129,24 @@ Configuration Stage 1
         STORAGE_SERVER_HOST=data-server.org
         PROC_SERVER_HOST=proc-server.org
 
-#. The ``.env`` file also contains information regarding the directory were the gitlab will be storing all its data.
+#. The ``.env`` file also contains information regarding the directory were in the filesystem will the infraestructure be storing all its data for future backups.
 
     .. code-block:: bash
 
         # This location is usually standard but feel free to modify is required
         GITLAB_HOME=/srv/gitlab
+        MERCURE_BASE=/opt/mercure
+        MINIO_HOME=/mnt/minio-disks
+
+    .. warning:: 
+
+        Mare sure that the directories exist, otherwise docker wearm will fail to start the services.
 
 #. If you are using the recommended Mercure, you will require to configure some fields of the ``config/mercure-conf/default_mercure.json`` to: 
 
     #. The `Modules` field in the json file to properly point to the dicom-indexer image.
-    #. The environment variables to be used for this containers. 
-    #. The docker arguments including the docker command to run. 
+    #. The `environment variables` to be used for this containers. 
+    #. The `docker arguments` including the docker command to run. 
     #. Any necessary directory bindings for this container.
 
     .. note::
@@ -145,14 +155,14 @@ Configuration Stage 1
         
     .. note::
 
-        You may have noticed that the mercure service is not included in the `` BIDSflux-stack.yml`` file, this is okay. Mercure needs to be installed using `docker-compose` as oposed to `docker swarm`, but don't worry, we will install it right after. 
+        You may have noticed that the mercure service is not included in the `` BIDSflux-stack.yml`` file, this is okay. Currently, ``Mercure`` needs to be installed using `docker-compose` as oposed to `docker swarm`, but don't worry, we will install it right after. 
 
 .. _local-stack-deployment-stage1:
 
 Stack Deployment Stage 1
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-#. One you have completed the initial configuration, we need to deploy de secrets for the docker-warm services by running the ``deploy/generate_secrets.sh``
+#. One you have completed the initial configuration, we need to deploy de secrets for the docker-warm services by running the ``deploy/generate_secrets.sh``. This comand will create the secrets required for the deployment of the services.
 
     .. code-block:: bash
         
@@ -160,7 +170,7 @@ Stack Deployment Stage 1
 
     .. important::
 
-        This will create the secrets required for the deployment of the services. The secrets will only be displayed once so make sure to save them in a safe place.
+        The secrets will only be displayed once so make sure to store them in a safe place.
 
 #. You will need to run the following command to initiate the docker swarm for the BIDSflux infraestructure. This will create a new docker stack where the docker swarm services will be deployed.
 
@@ -172,20 +182,20 @@ Stack Deployment Stage 1
 
         It takes some time to finish up downloading the images and deploying the services.
 
-    You can confirm the docker stack initialization by checking the services.
+    You can confirm the docker stack initialization by checking the individual services.
 
     .. code-block:: bash
 
         sudo docker services ls
 
-    This should return some information of the deployment status, for exapmle, the gitlab service.
+    This should return some information of the deployment status, for example, the gitlab service.
 
     .. code-block:: bash
 
         ID             NAME                      MODE         REPLICAS   IMAGE                                                                             PORTS
         jhyou70vh0zz   BIDSflux_gitlab               replicated   1/1        gitlab/gitlab-ee:17.7.1-ee.0                                                      *:80->80/tcp, *:222->22/tcp, *:443->443/tcp, *:5050->5050/tcp
 
-    What we care about the most is the REPLICAS as it tells us how many of the asked deployments are successfully up and running. You can also run the following command to get the service logs.
+    What we care about the most is the `REPLICAS` as it tells us how many of the asked deployments are successfully up and running. You can also run the following command to get the service logs.
 
     .. code-block:: bash
 
@@ -193,29 +203,26 @@ Stack Deployment Stage 1
 
     .. note::
 
-        If you see REPLICAS as 0/1 this means that your deployment is in place or there was an error with the deployment. You can get more information using the following command:
+        If you see ``REPLICAS`` as ``0/1`` this means that your deployment is ongoing or that there was an error with the deployment. If you encounter issues make sure that the Docker Swarm ports are open between the servers/VMs, and that the directories specified in the ``.env`` file exist. You can get more information using the following command.
 
         .. code-block:: bash
 
             sudo docker stack ps BIDSflux --no-trunc | grep <Service with 0/1 replicas>
 
-
-
 #.  You now should have all BIDSflux services running with 1/1 replicas, so, it is time to move to the next configuration stage.
-
 
 .. _local-configuration-stage2:
 
 Configuration Stage 2
 ~~~~~~~~~~~~~~~~~~~~~
 
-#. Run the ``mercure-setup.sh`` script in preparation for the Mercure deployment.
+#. Run the ``mercure-setup.sh`` script in preparation for the Mercure deployment, this script will create some of the required direcotries and asign the correct USERNAME and permissions for mercure to run properly.
 
     .. code-block:: bash
 
         bash mercure-setup.sh
 
-#. You will need to go to your browser and open the GitLab instance, log in, and create a ``GITLAB_TOKEN`` that we will need for the following steps. You can do this by going to the URL defined by your DOMAIN_NAME in the ``.env`` file."
+#. We need to create a root user ``GITLAB_TOKEN``. For this you will need to go to your browser and open the GitLab instance, log in, and create a ``GITLAB_TOKEN`` that we will need for the following steps. You can do this by going to the URL defined by your ``DOMAIN_NAME`` in the ``.env`` file."
 
     .. code-block:: bash
 
@@ -229,7 +236,7 @@ Configuration Stage 2
         username: root
         password: <gitlab_root_password> #as it was created using the deploy/generate_secrets.sh script
 
-    Once you are logged in, go to the settings and create a new `personal access token <https://docs.gitlab.com/user/profile/personal_access_tokens/#create-a-personal-access-token>`_. This token will be  Make sure to select the following scopes:
+    Once you are logged in, go to the settings and create a new `personal access token <https://docs.gitlab.com/user/profile/personal_access_tokens/#create-a-personal-access-token>`_. Make sure to select the following scopes:
 
     .. code-block:: bash
 
@@ -244,18 +251,18 @@ Configuration Stage 2
         admin_mode
 
 
-#. The next step is to run the ``deploy/init_ni-dataops.py`` and the ``deploy/runner_registration.py`` scripts to configure required users, tokens, variables, groups, the clonning for necessary resositories from BIDS-flux, and the registration of the processing workforce the gitlab runners.
+#. The next step is to run the ``deploy/init_ni-dataops.py`` and the ``deploy/runner_registration.py`` scripts to configure required users, tokens, variables, groups, clone the necessary resositories from the BIDS-flux, and the registration of the processing workforce the ``gitlab runners``. Follow these steps:
 
     #. You will need to declare the following variables in your shell environment:
 
-        - **GITLAB_TOKEN** #this was defined in the previous step where we created the personal access token
+        - **GITLAB_TOKEN** #this was defined in the previous step where we created the personal access token.
         - **BOT_EMAIL_DOMAIN** #this can be an email domain of your choice, but it is recommended to use the same as the ``DOMAIN_NAME``.
 
-    .. note::
+    .. important::
 
         If you do not have python installed, you must install it using the appropriate packages for your linux distribution.
 
-    #. Create a python environment using the ``deploy/python-env.txt`` file. You can do this using the following command:
+    #. Create a python environment to install the required python packages to complete the configuration using the ``deploy/python-env.txt`` file. You can do this using the following command:
 
     .. code-block:: bash
 
@@ -263,13 +270,13 @@ Configuration Stage 2
         source /path/to/specific/directory/env/bin/activate
         pip install -r deploy/python-env.txt
 
-    #. Figure out what are the docker containers that are running the gitlab runners so we can used this information to register the correct runners in the correct servers.
+    #. Figure out what are the docker containers that are running the gitlab runners so we can use this information to register the correct runners in the correct servers. The `dind runner` will be running in the data server and the `proc runners` will be running in the processing server.
 
         .. code-block:: bash
 
             sudo docker ps | grep gitlab-runner
 
-    #. Once you have the python environment created and activated. You need to run the following script twice, once to register the DinD gitlab runner which will handle task that require running docker inside a docker container like building images inside a docker container; and another time for the untaged, bids, and processing runners which will handle the main pipeline tasks like BIDS conversion, and running of derivative pipelines:
+    #. Once you have the python environment created and activated. You need to run the following script twice, once to register the `dind gitlab runner` which will handle tasks that require running docker inside a docker container like when building images inside a docker container; and a second time to register the `untaged, bids, and processing runners` which will handle the main pipeline tasks like DICOM to BIDS conversion, and the running of derivative pipelines:
 
         .. code-block:: bash
 
@@ -277,7 +284,17 @@ Configuration Stage 2
 
             python deploy/runner_registration.py ~/.docker/config.json deploy/dind_runner_configuration.json BIDSflux_gitlab-runner-dind.x
 
-    #. After successfully registering the GitLab Runners, you can run the script which will finalize the configuration of the local GitLab instace.
+        You can verify that the gitlab runners were registered correctly by going to the GitLab instance and checking the instance-wide runners in the amdin page settings. 
+        
+        #. On the left sidebar, at the bottom, select **Admin**.
+        #. Select **CI/CD** > **Runners**.
+
+        You should see something like this:
+
+        .. image:: img/runners.png
+            :width: 600px
+
+    #. After successfully registering the GitLab Runners, you can run the script which will finalize the configuration of the local GitLab instace. This script will show you two tokens that you will need to store in a safe place. The first token is the ``GITLAB_BOT_TOKEN`` which will be used to push the data to the GitLab instance, and the second token is the ``BIDS_API_TOKEN`` which will be used to provide access to the data in the pipelines.
 
         .. code-block:: bash
 
@@ -295,6 +312,12 @@ Configuration Stage 2
         GITLAB_REGISTRY_PATH=registry.gitlab.${DOMAIN_NAME}/ni-dataops/containers
         S3_URL_PATTERN='s3://s3.data-server.org/test.{ReferringPhysicianName}.{StudyDescriptionPath[1]}.dicoms'
         GITLAB_INDEXER_GROUP_TEMPLATE="{ReferringPhysicianName}/{StudyDescriptionPath[1]}"
+
+    #. CI_SERVER_HOST: The URL of the GitLab instance where the data will be pushed. Make sure to change the `DOMAIN_NAME_PLACEHOLDER` to the correct domain name.
+
+    #. S3_URL_PATTERN: The URL pattern for the S3 bucket where the data will be pushed to in ``MinIO``. Ideally the information used here should match the one used in the ``GITLAB_INDEXER_GROUP_TEMPLATE``.
+
+    #. GITLAB_INDEXER_GROUP_TEMPLATE: The template for the GitLab group where the data will be pushed. This should be the same as the one used in the ``S3_URL_PATTERN``.
 
     Additionally, you will need to uncomment the following lines in the ``BIDS-flux.yml`` file corresponding to the service deployment.
 
@@ -341,24 +364,27 @@ Configuration Stage 2
 Stack Deployment Stage 2
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-#. you can now deploy `Mercure` and you can do so with a simple command.
+#. As promissed you can now deploy `Mercure` and you can do so with a simple command.
 
     .. code-block:: bash
 
-        # Here the -f tells docker compose which file to use, -d tells docker to run in detached mode, and up is the command to deploy the mercure services    
         sudo docker compose -f docker-compose-mercure.yml up -d
+
+    Here the `-f` tells docker compose which file to use, `-d` tells docker to run in detached mode, and up is the command to deploy the mercure services        
     
-    You can also navigate to the Mercure GUI deployed in ``http://<DOMAIN_NAME>:8000`` and check the status/logs of the services there. If all services ar up you should see something like this:
+    You can also navigate to the Mercure GUI deployed in ``http://<DOMAIN_NAME>:8000`` and check the status/logs of the services there. If all services are up, you should see something like this:
 
     .. image:: img/mercure-gui.png
         :width: 600px
 
-    You will need to login using the default credentials and you will be prompted to change the password. The default credentials are:
+    You will need to login using the default credentials:
 
     .. code-block:: bash
 
         username: admin
         password: router
+
+    You can always change the login credentials in the GUI settings.
 
     .. note:: 
 
@@ -377,11 +403,11 @@ Stack Deployment Stage 2
             Refer to the `Mercure documentation <https://mercure-imaging.org/docs/>`_ for more information on how to configure the mercure services and troubleshooting.
 
 
-    In the GUI you will be able to see the status of the services, logs, and configure the routing/processing of DICOMS. Which brings us to the next step. 
+    In the GUI, you will be able to see the status of the services, logs, and configure the routing/processing of DICOMS. Which brings us to the next step. 
     
     Configure the DICOM receiver rules to properly route/process the received DICOMS.
 
-    Navigate to the ``Settings`` tab and go to the ``Rules`` section. Here you will be able to configure the rules filtering based on the DICOM tags available. ``Mercure`` is very powerful and flexible. You can configure `actions` to re-route the received DICOMS to another DICOM service; to process the DICOMS, or to do both. The rules can be based on individual MRI series or based on the study (complete set of series in an MRI visit) completion, how to define series/study completion is also flexible. You can define the completion rules based time after the last transfer, or based on the received series in case of the study-wide actions.
+    Navigate to the ``Settings`` tab and go to the ``Rules`` section. Here you will be able to configure the rules filtering based on the DICOM tags available. ``Mercure`` is very powerful and flexible. You can configure `actions` to re-route the received DICOMS to another DICOM service, to process the DICOMS, or to do both. The rules can be based on individual MRI series or based on the study (complete set of series in an MRI visit with the same StudyInstanceUID) completion, and how to define series/study completion is also flexible. You can define the study/series completion rules based on the time after the last DICOM transfer, or based on the received series in case of the study-wide actions.
 
     Let go through the configuration rules of the pre-configured rule.
     
@@ -401,7 +427,7 @@ Stack Deployment Stage 2
 
     .. note::
 
-        The imaged built for the dicom-indexer module whould have been created when we ran the ``deploy/init_ni-dataops.py`` script.
+        The imaged built for the dicom-indexer module would have been created when we ran the ``deploy/init_ni-dataops.py`` script.
 
     You can edit this module to better suit the needs for your project.
 
