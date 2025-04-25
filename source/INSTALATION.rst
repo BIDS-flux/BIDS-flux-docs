@@ -364,7 +364,7 @@ Configuration Stage 2
 Stack Deployment Stage 2
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-#. As promissed you can now deploy `Mercure` and you can do so with a simple command.
+#. As promised you can now deploy `Mercure` and you can do so with a simple command.
 
     .. code-block:: bash
 
@@ -409,7 +409,7 @@ Stack Deployment Stage 2
 
     Navigate to the ``Settings`` tab and go to the ``Rules`` section. Here you will be able to configure the rules filtering based on the DICOM tags available. ``Mercure`` is very powerful and flexible. You can configure `actions` to re-route the received DICOMS to another DICOM service, to process the DICOMS, or to do both. The rules can be based on individual MRI series or based on the study (complete set of series in an MRI visit with the same StudyInstanceUID) completion, and how to define series/study completion is also flexible. You can define the study/series completion rules based on the time after the last DICOM transfer, or based on the received series in case of the study-wide actions.
 
-    Let go through the configuration rules of the pre-configured rule.
+    Let's go through the configuration rules of the pre-configured rule.
     
     .. image:: img/mercure-rules.png
         :width: 600px
