@@ -6,7 +6,7 @@ Software Stack Deployment
 This page will go through how to get started with the sofware stack installation. We will break down the process into pre-requisites, local infrastructure, with two stages of configuration and deployment, and finally the centralized infrastructure.
 
 Pre-requisites
---------------
+^^^^^^^^^^^^^^
 
 As explained in the :ref:`hardware requirements <hardware-requirements>` section, the BIDS-flux infrastructure recommends using two local servers and one centralized server to ensure secure and efficient functionality. One server should have ample storage and moderate compute power, while the other should have limited storage but high computational power. The centralized server should have robust storage and sufficient computational power to handle data from all sites.
 
