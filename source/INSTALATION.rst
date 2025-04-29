@@ -5,6 +5,10 @@ Software Stack Deployment
 
 This page will go through how to get started with the sofware stack installation. We will break down the process into pre-requisites, local infrastructure, with two stages of configuration and deployment, and finally the centralized infrastructure.
 
+.. note:: 
+
+    The centralized infrastructure is not required for the local infrastructure to work, but it is recommended for larger projects with multiple sites and a large amount of data.
+
 Pre-requisites
 ^^^^^^^^^^^^^^
 
