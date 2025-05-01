@@ -64,8 +64,10 @@ The **BIDS-flux** infrastructure is designed to scale and adapt flexibly to vari
   
   - A dedicated **Data Server** for data ingestion, management, and storage.
   - A dedicated **Processing Server** optimized for data processing and analysis.
+  - Accessible only to the local site, with no external access.
 
 - **One centralized data repository** to aggregate data from multiple sites, enabling efficient collaboration, centralized data management, backups, and sharing of BIDS-compatible derivatives.
+- Widely accessible to the scientific community, with controlled access to sensitive data.
 
 Example Deployment: Canadian Paediatric Imaging Platform (`C-PIP <cpip.org>`_)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -96,6 +98,9 @@ Software Stack
 
 Local Infrastructure
 ^^^^^^^^^^^^^^^^^^^^
+
+The local infrastructure is designed to be deployed locally at each site =======
+
 - **Docker** - Containerization and reproducibility https://docs.docker.com/
 - **Git** - Version control for code and data https://git-scm.com/doc
 - **Mercure** - Data ingestion and curation https://mercure-imaging.org/docs/

@@ -199,8 +199,8 @@ During the production phase, new sessions are `converted` into separated ``conve
         checkout dev
         merge convert/session_name2
 
-Relsease Phase
-~~~~~~~~~~~~~~~~
+Release Phase
+~~~~~~~~~~~~~
 
 When working on a data-release, a new release branch can be created from ``dev``, iterated upon (eg. edit README, docs, ) through branches and MRs, and finally merge to the ``main`` branch and tagged with a release version.
 New sessions continues to be added to the ``dev`` branch in the back.
@@ -250,29 +250,106 @@ New sessions continues to be added to the ``dev`` branch in the back.
         commit
 
 
-Management
-^^^^^^^^^^
+Pipeline Management
+^^^^^^^^^^^^^^^^^^^
 
 Automated
 ~~~~~~~~~~
 
 After proper configurations have been made, the data ingestion process is fully automated. The data is pushed to the Mercure instance and automatically pushed to the local GitLab instance. The data is then converted to BIDS format and processed using the configured pipelines.
 
+Heudiconv Conversion to BIDS
+============================
+
+The Heudiconv tool is used to convert DICOM files to BIDS format following a set of heuristics that define how the data should be organized.
+
+The heuristics file is a Python script that can be found in `ci-pipelines BIDS-flux repository <https://gitlab.unf-montreal.ca/bids-flux/ci-pipelines/-/blob/main/src/pipelines/mri/heuristics_cpip.py?ref_type=heads>`_.
+
+In general the heuristics file is configured to run multiple functions:
+
+- **def custom_seqinfo(wrapper, series_files):** This function is used to extract the relevant DICOM tags from the DICOM files that will be used to determine the BIDS sequence information.
+- **def infotoids(seqinfos, outdir):** This function leverages the extracted DICOM tags to determine the BIDS subject and session IDS.
+- **def infotodict(seqinfo):** Heuristic evaluator for determining which runs belong where allowed template fields follow python string module.
+
+Deface of BIDS images
+============================
+
+The defacing of BIDS images is performed using a simple custom tool that affinely registers the T1w image to the MNI spcase and applies a mask to the image.
+
+BIDS-validation
+============================
+
+The BIDS-validation process is performed using the dockerized version of the `BIDS-validator tool <https://hub.docker.com/r/bids/validator>`_, which checks the newly created BIDS dataset for compliance with the BIDS standard. This step is repeated for every change made to the BIDS datalad dataset in GitLab.
+
+MRIQC
+============================
+
+The MRIQC tools is used to asses the quality of the BIDS images. The MRIQC reports are generated and stored in the ``qc/mriqc`` datalad dataset in gitlab. The reports are linked to the BIDS images, allowing for easy access and review through the merge request.
 
 Manual Input
 ~~~~~~~~~~~~
 
-The dataset administrator is responsible for reviewing the BIDS-converted data and associated pre-processing reports. They may also manually edit the BIDS dataset when necessary. Additionally, the administrator oversees the approval process for merge requests, ensuring that any required modifications are made prior to granting approval.
+The dataset administrator is responsible for reviewing the BIDS-converted data and associated MRIQC reports. They may also manually edit the BIDS dataset when necessary. Additionally, the administrator oversees the approval process for merge requests, ensuring that any required modifications are made prior to granting approval.
+
+Retiggering of Heudiconv
+============================
+
+If the Heudiconv conversion process fails or requires reconfiguration of the heuristics, the dataset administrator can manually trigger the process again using the GitLab interface. This allows for flexibility in managing the conversion process and ensuring that the data is properly formatted.
+
+.. note:: 
+
+    If the DICOM data was partially converted causing the pipeline to fail the BIDS-validation and a new ``convert/sub-1_ses-1`` branch was created. You will need to either change the branch name to something like ``convert/sub-1_ses-1_originalconv`` or delete it as the retrigger process will try to recreate the same branch as before failing in the process. 
+    
+    The partially converted data will be kept in the S3 compatible storage (MinIO) unless you delete it manually. You can delete it using a combination of git, git-annex, and datalad with the following command:
+
+    .. code-block:: bash
+
+        git checkout convert/sub-1_ses-1
+        git annex drop --from=<remote name> /path/to/data --force
+        datalad save --message "deleted partial conversion data"
+
+    The reason we need to save the changes after the fact is that git-annex needs to be notified that you dropped the binary data from the remote. Otherwise when reconverting the data, datalad might think the data already exists in the remote and not upload the complete data.
+
+Manual Editing of BIDS Dataset
+============================
+
+The dataset administrator can manually edit the BIDS dataset using git and Datalad commands. This allows for flexibility in managing the dataset and ensuring that it meets the BIDs standards.
+
+.. code:: bash
+
+    git mv /path/to/file /new/path/to/file
+    datalad save --message "Renamed files"
+    git rm /path/to/file
+    datalad save --message "Deleted files"
+    datalad push --to=origin
+    datalad push --to=<bids s3 remote>
+
+
+MRIQC Report & Merge Request Review
+============================
+
+The MRIQC reports will need to be reviewed by the dataset administrator. Depending on the project needs the dataset administrator can choose to either approve the merge request of new ``convert/sub-1_ses-1`` to the ``dev`` branch or reject it.
+
+Data Access
+^^^^^^^^^^^
 
 Access Management
-~~~~~~~~~~~~~~~~~
+============================
 
 Access to the data is managed through GitLab groups and S3 bucket policies. This access can be as granular as the project requires. The dataset administrator is responsible for managing access to the data, including granting and revoking permissions as needed. Access to the data is typically restricted to authorized personnel only, ensuring that sensitive information is protected. When data is ready to be shared openly or with specific collaboration groups or individuals, the dataset administrator can create a release branch and tag it with a version number.
 
 Different tiers of access using gitlab can be reviewed in the `official GitLab documentation <https://docs.gitlab.com/user/permissions/>`_.
 
+S3 bucket policies can be used to restrict access to the data stored in MinIO. The dataset administrator can create policies that allow or deny access to specific users or groups based on their roles and responsibilities. This ensures that only authorized personnel have access to sensitive data, while still allowing for collaboration and sharing of non-sensitive data. 
 
-Data Access
-^^^^^^^^^^^
+Locally
+~~~~~~~
+GitLab serves as a catalogue for the BIDS-flux data. 
 
-Required steps to access the data:
+To access data from the BIDS-flux infrastructure you will need to work with two of the software applications deployed for BIDS-flux, GitLab and MinIO. 
+
+GitLab tracks the structure and history of the repositories, or in our case, the study directory hierarchy. The hierarchy of directories inside of GitLab is defined in this order: **Principal Investigator** / **Study Name** / (``bids``, ``sourcedata``, ``qc``, ``derivatives``). **Principal Investigator** will be the investigator who is heading the study. **Study Name** will be the name of the study or studies which are under the principal investigator. Under each independent study, you will find 4 different repositories containing study-specific data. The ``sourcedata`` repository will be the one keeping track of all the DICOM files of the study. The ``bids`` folder tracks the BIDS formatted images for the study. The ``qc`` repository tracks the quality control checks for the data of the study, and the ``derivatives`` repository tracks processing steps for the BIDS formatted data.
+
+MinIO will serve as the object storage for all the data for the repositories in GitLab. 
+GitLab track the file’s history and the structure while MinIO stores all the images and binary objects (all non-text files).
+
