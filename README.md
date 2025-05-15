@@ -1,4 +1,10 @@
-# BIDS-flux documentation
+<div style="text-align: center;">
+    <h1>BIDS-flux documentation</h1>
+</div>
+<div style="text-align: center;">
+    <img src="source/img/qr_download.png" alt="ReadTheDocs" width="50%">
+</div>
+
 
 ## Forked from:
 
