@@ -17,12 +17,12 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'C-PIP'
-copyright = '2023, C-PIP team'
-author = 'C-PIP team'
+project = 'BIDS-flux-docs'
+copyright = '2023, BIDS-flux'
+author = 'C-PIP NeuroInformatics Team'
 
 # The full version, including alpha/beta/rc tags
-release = '2023-beta'
+release = '2025-beta'
 master_doc = 'index'
 
 # -- General configuration ---------------------------------------------------
@@ -32,8 +32,10 @@ master_doc = 'index'
 # ones.
 extensions = [
               'sphinx.ext.autosectionlabel',
-              'myst_parser'
-             ]
+              'myst_parser',
+              'sphinx_copybutton',
+              'sphinxcontrib.mermaid'             
+              ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -52,7 +54,7 @@ exclude_patterns = []
 html_theme = 'sphinx_rtd_theme'
 
 # tab name
-html_short_title = 'CPIP'
+html_short_title = 'BIDS-flux-docs'
 
 # The logo
 html_logo = ''
