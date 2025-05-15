@@ -127,7 +127,7 @@ Centralized Infrastructure
 - **Keycloak** - Authentication and authorization https://www.keycloak.org/docs/latest/server_admin/index.html
 - **Traefik** - Reverse proxy and load balancer https://doc.traefik.io/traefik/
 
-If you have any questions or need assistance, feel free to [link to contact information or support].
+If you have any questions or need assistance, feel free to post an issue to [https://github.com/BIDS-flux/BIDS-flux-docs/issues].
 
 .. image:: img/logo_chusj.jpeg
   :width: 200px
