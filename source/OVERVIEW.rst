@@ -121,9 +121,9 @@ The local infrastructure is designed to be deployed locally at each site =======
 - **Heudiconv** - DICOM to BIDS conversion https://heudiconv.readthedocs.io/en/latest/
 - **NiPreps** - Neuroimaging PREProcessing toolS https://www.nipreps.org/ 
 - **BIDSApps** - Containerized reproducible processing workflows
-- **NeuroLibre** (comming soon) - Executable, reproducible preprints
-- **DataVerse** (comming soon) - Long-term archival and publication
-- **BinderHub** (comming soon) - Interactive exploration and analysis
+- **NeuroLibre** (coming soon) - Executable, reproducible preprints
+- **DataVerse** (coming soon) - Long-term archival and publication
+- **BinderHub** (coming soon) - Interactive exploration and analysis
 
 Centralized Infrastructure
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -131,7 +131,7 @@ Centralized Infrastructure
 - **Git** - Version control for code and data https://git-scm.com/doc
 - **Gitea** - Workflow orchestration and version control https://docs.gitea.com/
 - **MinIO** - Object storage for raw and processed data https://min.io/docs/minio/linux/index.html
-- **DataCat** - Data pooling, sharing and quering platform https://datacat.readthedocs.io/en/latest/
+- **DataCat** - Data pooling, sharing and querying platform https://datacat.readthedocs.io/en/latest/
 - **DataVerse** - Long-term archival and publication
 - **BinderHub** - Interactive exploration and analysis https://binderhub.readthedocs.io/en/latest/
 - **JupyterHub** - Multi-user Jupyter notebook server https://jupyterhub.readthedocs.io/en/stable/

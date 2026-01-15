@@ -1,7 +1,7 @@
 Usage Notes
 -----------
 
-After completing the :ref:`software deployment <hardware-requirements>` you should have at least 2 servers/VMs (it could tecnically be just 1) a **data server** and a **processing server**. This section is intended to provide a guide on how to use the infraestructure for it's intended purpose of neuroimaging data management and analysis acceleration.
+After completing the :ref:`software deployment <hardware-requirements>` you should have at least 2 servers/VMs (it could technically be just 1) a **data server** and a **processing server**. This section is intended to provide a guide on how to use the infraestructure for it's intended purpose of neuroimaging data management and analysis acceleration.
 
 Data Flow
 ^^^^^^^^^
@@ -69,7 +69,7 @@ As we can see in the diagram the data flow is divided into 3 parts.
 
 3) Data integration and sharing using a centralized GitLab instance.
 
-The dataset admin stick man corresponds the indiviudal responsable for QC reviewing, dataset merging and pipeline monitoring. These tasks can be divided into multiple individuals for more efficient and robust management.
+The dataset admin stick man corresponds the indiviudal responsible for QC reviewing, dataset merging and pipeline monitoring. These tasks can be divided into multiple individuals for more efficient and robust management.
 
 We utilize DICOM networking protocol to transfer the images from the scanner to the data server Mercure instance where it gets archived and automatically pushed to the GitLab instance based on the following DICOM tags:
 
@@ -78,11 +78,11 @@ We utilize DICOM networking protocol to transfer the images from the scanner to 
 - **StudyInstanceUID:** This determines the unique dicom study ID and it is used to track the dicom data in GitLab.
 - **PatientID:** This determines the BIDS unique participant ID and session IDs and it is used to create link the DICOM data to the BIDS dataset.
 
-Tecnically speaking, mercure can receive data from any MRI vendor, however, it has been only been configured to work with either a Siemens or GE 3T MRI scanner yet. This can be addapted to any scanner vendor with a bit of work and testing.
+Technically speaking, mercure can receive data from any MRI vendor, however, it has been only been configured to work with either a Siemens or GE 3T MRI scanner yet. This can be adapted to any scanner vendor with a bit of work and testing.
 
 .. note:: 
 
-    The selected DICOM tags can be modified to adapt to the restrictions of the acquisition site. Nevertheless, it is adviced to reliably have enough information in the tags to be able to create an equivalent structure. 
+    The selected DICOM tags can be modified to adapt to the restrictions of the acquisition site. Nevertheless, it is advised to reliably have enough information in the tags to be able to create an equivalent structure. 
 
 Git Flow
 ^^^^^^^^

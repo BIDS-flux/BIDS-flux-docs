@@ -67,13 +67,13 @@ Docker Swarm Installation
 
         In docker swarm in order to mount a volume to a container, such volume must exist. This is not necessary using docker compose where directories are created if missing.
 
-#. More documentation on how to automatically and securely deploy the storescp enviromental varibles using ``docker secrets`` to come.
+#. More documentation on how to automatically and securely deploy the storescp environmental variables using ``docker secrets`` to come.
 
-#. Debbugging
+#. Debugging
 
     .. note:: 
 
-        Check `this <https://stackoverflow.com/questions/55087903/docker-logs-errors-of-services-of-stack-deploy>`_ post for debbugging.
+        Check `this <https://stackoverflow.com/questions/55087903/docker-logs-errors-of-services-of-stack-deploy>`_ post for debugging.
 
     .. important:: 
 

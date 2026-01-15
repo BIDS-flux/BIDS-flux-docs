@@ -57,7 +57,7 @@ Docker swarm installation
 
         cd stack/storage_server
 
-#. If using selfsigned certs, the installation requires the creation of self-signed certificates using the certgen tool described in intallation :ref:`option 2 <option2>` further down in this page.
+#. If using selfsigned certs, the installation requires the creation of self-signed certificates using the certgen tool described in installation :ref:`option 2 <option2>` further down in this page.
 
 #. Create the other secrets required.
 
@@ -90,11 +90,11 @@ Docker swarm installation
 
         In docker swarm, in order to mount a volume to a container, such volume must exist. This is not necessary using docker compose where directories are created if missing.
         
-#. Debbugging
+#. Debugging
 
     .. note:: 
 
-        Check `this <https://stackoverflow.com/questions/55087903/docker-logs-errors-of-services-of-stack-deploy>`_ post for debbugging.
+        Check `this <https://stackoverflow.com/questions/55087903/docker-logs-errors-of-services-of-stack-deploy>`_ post for debugging.
 
     .. important:: 
 
@@ -114,9 +114,9 @@ You can find the installation guides for the different operating systems in this
         wget https://dl.min.io/server/minio/release/linux-amd64/archive/minio-20231016041343.0.0.x86_64.rpm -O minio.rpm
         sudo dnf install minio.rpm
 
-    Other considerations required include the follwoing:
+    Other considerations required include the following:
 
-    #. Create the Systemd Sevice File (/usr/lib/systemd/system/minio.service) followig `this steps <https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html#minio-snsd>`_. 
+    #. Create the Systemd Sevice File (/usr/lib/systemd/system/minio.service) following `this steps <https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html#minio-snsd>`_. 
 
         .. code-block:: text
 
@@ -166,7 +166,7 @@ You can find the installation guides for the different operating systems in this
         .. code-block:: bash
 
             User=minio-user # user that will be setup to have access to the minio
-            Group=minio-user # gropu that will be setup to have access to the minio
+            Group=minio-user # group that will be setup to have access to the minio
 
     #. Make sure that you create the MinIO folder that is set up in /usr/lib/systemd/system/minio/minio.service to be your "mounted drive". I set ~/mnt/data so I do the following.
 
@@ -182,7 +182,7 @@ You can find the installation guides for the different operating systems in this
             useradd -M -r -g minio-user minio-user
             chown minio-user:minio-user /mnt/data #mounted drives set up in /usr/lib/systemd/system/minio/minio.service file, could be multiple
 
-#. Create the environmnet variable file.
+#. Create the environment variable file.
 
     If you are planning on using self signed certificates with a domain name for the S3-API, create a tls certificate with the appropriate ips/domains. Follow `these instructions <https://min.io/docs/minio/linux/operations/network-encryption.html>`_. You can use the `certgen <https://github.com/minio/certgen>`_ tool from the minio team.
 
