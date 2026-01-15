@@ -88,7 +88,7 @@ The C-PIP pipeline will have a StoreSCP container listening for DICOMS sessions 
 
 #. First, make sure you have :ref:`docker and docker compose <dockerinstall>` installed.
 
-#. Then clone the GitHub repository `https://gitlab.com/cal_cpip/calgary-servers.git <https://gitlab.com/cal_cpip/calgary-servers.git>`_ which will contain the requied configurations, dockerfiles, and docker compose files.
+#. Then clone the GitHub repository `https://gitlab.com/cal_cpip/calgary-servers.git <https://gitlab.com/cal_cpip/calgary-servers.git>`_ which will contain the required configurations, dockerfiles, and docker compose files.
 
    .. note:: 
 

@@ -240,7 +240,7 @@ There is a couple of ways in which you can achieve this. For both option, you wi
 
          The ``--insecure`` is required in order to work with **self-signed certificates**
 
-   After doing these, you should be able to see a button that says debbug at the top right job window in the GitLab console. By clicking this button it should take you to the debugging terminal where you can debbug your pipeline.
+   After doing these, you should be able to see a button that says debug at the top right job window in the GitLab console. By clicking this button it should take you to the debugging terminal where you can debug your pipeline.
 
       .. figure:: ../../_static/infographics/interactive_web_terminal_running_job.png
          :width: 600px 

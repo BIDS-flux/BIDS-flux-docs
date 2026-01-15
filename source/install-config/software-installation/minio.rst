@@ -116,7 +116,7 @@ You can find the installation guides for the different operating systems in this
 
     Other considerations required include the following:
 
-    #. Create the Systemd Sevice File (/usr/lib/systemd/system/minio.service) following `this steps <https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html#minio-snsd>`_. 
+    #. Create the Systemd Service File (/usr/lib/systemd/system/minio.service) following `this steps <https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html#minio-snsd>`_. 
 
         .. code-block:: text
 

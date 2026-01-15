@@ -463,7 +463,7 @@ Stack Deployment Stage 2
         #. CI_SERVER_HOST: The URL of the GitLab instance where the data will be pushed. Make sure to change the DOMAIN_NAME_PLACEHOLDER to the correct domain name.
         #. GITLAB_BOT_USERNAME: The username of the GitLab bot which should also be given access to the data being pushed. Make sure to change the DOMAIN_NAME_PLACEHOLDER to the correct domain name.
         #. GITLAB_BOT_EMAIL: The email of the GitLab bot which should also be given access to the data being pushed.
-        #. GITLAB_TOKEN: The token of the GitLab bot which will be used to push the data ``dicom_bot``. This toke was created when we ran the ``deploy/init_ni-dataops.py`` script. You were asked to safely store this token :ref:`local-configuration-stage2`.
+        #. GITLAB_TOKEN: The token of the GitLab bot which will be used to push the data ``dicom_bot``. This token was created when we ran the ``deploy/init_ni-dataops.py`` script. You were asked to safely store this token :ref:`local-configuration-stage2`.
         #. AWS_ACCESS_KEY_ID: The AWS access key ID for the S3 bucket where the data will be pushed. You were asked to safely store this token :ref:`local-stack-deployment-stage1` under ``s3_id``.
         #. AWS_SECRET_ACCESS_KEY: The AWS secret access key for the S3 bucket where the data will be pushed. You were asked to safely store this token :ref:`local-stack-deployment-stage1` under ``s3_secret``.
         #. S3_URL_PATTERN: The URL pattern for the S3 bucket where the data will be pushed to in ``MinIO``. Ideally the information used here should match the one used in the ``GITLAB_INDEXER_GROUP_TEMPLATE``.
