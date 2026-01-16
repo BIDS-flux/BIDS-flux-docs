@@ -53,6 +53,17 @@ Reusable
 
    This documentation is a work in progress, and we are continuously updating and expanding it to provide you with the most comprehensive and helpful information. Thank you for your patience.
 
+Resulting Standardized Data Structure
+------------------------
+
+The resulting data structure follows the BIDS standard, ensuring that all datasets are well-organized and easily accessible for analysis and sharing. Each dataset includes raw imaging data Sourcedata/dicoms, bids data, and processed derivatives (fmriprep, qsiprep, qsirecon), all version-controlled and linked through Datalad inside GitLab (You can explore this structure in: `NKI-RS dataset <https://gitlab.unf-montreal.ca/Milham/NKI-RS>`_).
+
+.. image:: img/bids_structure_example.png
+
+Now imagine that you have multiple sites collecting data for this same project all of which produce the same structure. These datalad metadata datasets can be then integrated into a cloud platform centralized repository facilitaing data discovery, analyses, and collaboration (`Federated NKI-RS dataset <https://git.cpipstudy.org/NKI-RS>`_) while maintaining control over data data access.
+
+.. image:: img/federated_bids_structure_example.png
+
 .. _hardware-requirements:
 
 Hardware Requirements
