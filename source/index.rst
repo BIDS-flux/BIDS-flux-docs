@@ -5,11 +5,11 @@
    :hidden:
    :caption: 🪄 Docs
 
-   INSTALATION
+   INSTALLATION
    CONFIGURATION
    USAGE
    OUTPUTS
-   GLOSARY
+   GLOSSARY
    RELEASES
    CONTRIBUTING
    AUTHORS
