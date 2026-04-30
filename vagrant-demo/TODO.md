@@ -21,7 +21,7 @@ that appear in INSTALLATION.rst but **do not exist** on any active branch:
 | `dind_runner_configuration.json`| `deploy/runner_configuration-dind.json` |
 | `mercure-setup.sh`              | (only on `mercure` branch)              |
 | `docker-compose-mercure.yml`    | (only on `mercure` branch)              |
-| `--dport 9789`                  | `--data-path-port 9789`                 |
+| `--dport 9789`                  | `--data-path-port 9789`[^swarm-flag]    |
 | `GITLAB_HOME=/srv/gitlab`       | `/data/gitlab` (per `create_directory.sh`) |
 | `MERCURE_BASE=/opt/mercure`     | `/data/mercure`                         |
 | `MINIO_HOME=/mnt/minio-disks`   | `/data/minio`                           |
@@ -30,12 +30,19 @@ INSTALLATION.rst should be rewritten against `calgary` (or whichever active
 branch is canonical) as a follow-up. Until then this `vagrant-demo/`
 documents what actually works.
 
+[^swarm-flag]: The actual `docker swarm init` flag is `--data-path-port`,
+not `--dport`. The reference doc reads: "Port number used to send data;
+if no value is set or is set to 0, the default port (4789) is used."
+See <https://docs.docker.com/reference/cli/docker/swarm/init/>.
+
 ## hostname coupling
 
 `docker-compose.stack.yml` on `calgary` hardcodes UCalgary swarm placement
-constraints (`node.hostname == itappcpipdp01.uc.ucalgary.ca`,
+constraints[^placement-constraints] (`node.hostname == itappcpipdp01.uc.ucalgary.ca`,
 `itappcpippp01.uc.ucalgary.ca`). The Vagrantfile sets these as VM hostnames
 verbatim so the upstream compose deploys without modification.
+
+[^placement-constraints]: At submodule SHA `1bfcd55…` (calgary), all six service blocks declare a single-element `deploy.placement.constraints` list pinning to one of the two FQDNs: `gitlab` ([L28-L30](https://gitlab.unf-montreal.ca/ni-dataops/stack/-/blob/1bfcd551520ae7e771fcd459428cde47a44eb192/docker-compose.stack.yml#L28-L30)), `gitlab-runner` ([L55-L57](https://gitlab.unf-montreal.ca/ni-dataops/stack/-/blob/1bfcd551520ae7e771fcd459428cde47a44eb192/docker-compose.stack.yml#L55-L57)), `gitlab-runner-dind` ([L77-L79](https://gitlab.unf-montreal.ca/ni-dataops/stack/-/blob/1bfcd551520ae7e771fcd459428cde47a44eb192/docker-compose.stack.yml#L77-L79)), `data_endpoint` ([L114-L116](https://gitlab.unf-montreal.ca/ni-dataops/stack/-/blob/1bfcd551520ae7e771fcd459428cde47a44eb192/docker-compose.stack.yml#L114-L116)), `dicom_indexer` ([L144-L146](https://gitlab.unf-montreal.ca/ni-dataops/stack/-/blob/1bfcd551520ae7e771fcd459428cde47a44eb192/docker-compose.stack.yml#L144-L146)), `minio` ([L204-L206](https://gitlab.unf-montreal.ca/ni-dataops/stack/-/blob/1bfcd551520ae7e771fcd459428cde47a44eb192/docker-compose.stack.yml#L204-L206)).
 
 To deploy on hosts with different names (typhon, washoe replacement, …) one
 of: (a) override the placement constraints with a docker-compose override

@@ -11,7 +11,9 @@ describes a different, abandoned branch (`stack_refactor`); see
 | `data` | GitLab, Runner DinD, MinIO, dicom   | `itappcpipdp01.uc.ucalgary.ca` | `192.168.56.10` | 8443→443, 8080→80, 2223→222, 5050→5050, 9000→9000, 9090→9090 |
 | `proc` | GitLab Runner                       | `itappcpippp01.uc.ucalgary.ca` | `192.168.56.11` | none (talks to data over private net)                       |
 
-The hostnames look funny on purpose: the upstream `docker-compose.stack.yml` pins swarm placement to those exact UCalgary names, so we use them verbatim and avoid modifying upstream files. To change, see the "hostname coupling" note in TODO.md.
+The hostnames look funny on purpose: the upstream `docker-compose.stack.yml` pins swarm placement to those exact UCalgary names[^stack-placement], so we use them verbatim and avoid modifying upstream files. To change, see the "hostname coupling" note in TODO.md.
+
+[^stack-placement]: At submodule SHA `1bfcd55…` (calgary), every service's `deploy.placement.constraints` list contains either `node.hostname == itappcpipdp01.uc.ucalgary.ca` or `node.hostname == itappcpippp01.uc.ucalgary.ca`. See [`docker-compose.stack.yml#L28-L30`](https://gitlab.unf-montreal.ca/ni-dataops/stack/-/blob/1bfcd551520ae7e771fcd459428cde47a44eb192/docker-compose.stack.yml#L28-L30) for the manager pin and [L55-L57](https://gitlab.unf-montreal.ca/ni-dataops/stack/-/blob/1bfcd551520ae7e771fcd459428cde47a44eb192/docker-compose.stack.yml#L55-L57) for the worker pin.
 
 ## Prerequisites on the host
 
@@ -116,6 +118,8 @@ vagrant-demo/
 ## Troubleshooting
 
 - `docker service ls` shows `0/1` — see `sudo docker stack ps cpip --no-trunc`. Common cause: a `secrets/<name>` file the compose mounts is missing or empty. `tasks/stack.py` seeds stubs for the user-supplied ones; if you've cleaned them, re-run `make deploy-step4-stack`.
-- Worker won't join — check `192.168.56.0/24` reachability between VMs and that swarm ports are open (2377/tcp, 7946/tcp+udp, 9789/udp on the private libvirt network).
+- Worker won't join — check `192.168.56.0/24` reachability between VMs and that swarm ports are open (2377/tcp, 7946/tcp+udp, 9789/udp on the private libvirt network).[^swarm-ports]
+
+[^swarm-ports]: Per the Docker swarm-mode tutorial: "TCP port 2377 for cluster management communications", "TCP and UDP port 7946 for communication among nodes", "UDP port 4789 for overlay network traffic". We override the data-path port to 9789 via `docker swarm init --data-path-port 9789` (see `tasks/swarm.py`), which substitutes for the default 4789. See <https://docs.docker.com/engine/swarm/swarm-tutorial/> and the `--data-path-port` flag at <https://docs.docker.com/reference/cli/docker/swarm/init/>.
 - Re-run idempotency — markers `.secrets-generated` and the seeded `secrets/*` files live under `/opt/bidsflux/stack/`. `make clean-secrets` removes the secrets-generated marker.
 - The `gitlab` service is the slow one (4 GB RAM, several minutes to settle on first boot). The wait loop in `tasks/stack.py` polls for ten minutes (60 × 10s) before giving up.

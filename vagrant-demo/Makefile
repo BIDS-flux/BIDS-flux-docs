@@ -52,8 +52,13 @@ destroy:
 	$(VAGRANT) destroy -f
 
 # Discover SSH coordinates straight from Vagrant. This dodges the whole
-# `~/.vagrant.d/insecure_private_key` vs `.vagrant/machines/<vm>/...` vs
-# per-VM-key-with-insert_key=true mess across Vagrant versions.
+# `~/.vagrant.d/insecure_private_key` (legacy, RSA-only) vs the modern
+# `~/.vagrant.d/insecure_private_keys/vagrant.key.{rsa,ed25519}` layout
+# vs `.vagrant/machines/<vm>/...` vs per-VM-key-with-insert_key=true
+# mess across Vagrant versions.
+# see https://github.com/hashicorp/vagrant/blob/b40f6e5fdae1113518e9c92f96dfcd364b646ff9/keys/README.md
+# (note: prior to vagrant 2.3.8 only the RSA key was honoured)
+# and https://developer.hashicorp.com/vagrant/docs/vagrantfile/ssh_settings#config-ssh-insert_key
 $(SSH_CONFIG):
 	mkdir -p $(CACHE_DIR)
 	$(VAGRANT) ssh-config $(DATA_NAME) $(PROC_NAME) > $@.tmp

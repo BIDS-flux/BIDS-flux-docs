@@ -9,6 +9,15 @@
 #     itappcpipdp01.uc.ucalgary.ca   (data-server / swarm manager)
 #     itappcpippp01.uc.ucalgary.ca   (proc-server / swarm worker)
 #
+# Quoting the upstream compose at SHA 1bfcd55… (`gitlab` service):
+#     deploy:
+#       placement:
+#         constraints:
+#           - node.hostname == itappcpipdp01.uc.ucalgary.ca
+# (and the analogous constraint pinning `gitlab-runner` to itappcpippp01.uc.ucalgary.ca.)
+# See https://gitlab.unf-montreal.ca/ni-dataops/stack/-/blob/1bfcd551520ae7e771fcd459428cde47a44eb192/docker-compose.stack.yml#L28-L30
+# (and L55-L57, L77-L79, L114-L116, L144-L146, L204-L206 for the other services).
+#
 # This is silly-looking but means we can deploy the upstream compose file
 # verbatim — no sed-rewriting on top of an external project. Switching to
 # Montreal-style hostnames means switching upstream branch (see TODO.md).
@@ -56,6 +65,18 @@ EOS
 
 Vagrant.configure("2") do |config|
   config.vm.box = BOX
+  # Per Vagrant docs: "By default or if set to true, Vagrant will
+  # automatically insert a keypair to use for SSH, replacing Vagrant's
+  # default insecure key inside the machine if detected. ... If set to
+  # false, Vagrant will not automatically add a keypair to the guest."
+  # see https://developer.hashicorp.com/vagrant/docs/vagrantfile/ssh_settings#config-ssh-insert_key
+  # We then discover the actual key path via `vagrant ssh-config`
+  # rather than hardcoding ~/.vagrant.d/insecure_private_key, because
+  # the global insecure-key layout has changed across Vagrant
+  # versions (RSA-only `insecure_private_key` vs the modern
+  # `vagrant.key.{rsa,ed25519}` pair under
+  # ~/.vagrant.d/insecure_private_keys/).
+  # see https://github.com/hashicorp/vagrant/blob/b40f6e5fdae1113518e9c92f96dfcd364b646ff9/keys/README.md
   config.ssh.insert_key = false
 
   config.vm.provider :libvirt do |lv|

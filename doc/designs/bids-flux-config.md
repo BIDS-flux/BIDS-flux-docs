@@ -53,8 +53,14 @@ mandatory env-vars *with* `.env` providing sensible defaults.
 
 `.env` wins three ways: zero new dependencies, all five consumers parse
 key=value identically, and Compose v2 reads `.env` from the project
-directory natively — the upstream `stack_refactor` branch literally
-shipped one.
+directory natively[^compose-env] — the upstream `stack_refactor` branch
+literally shipped one.
+
+[^compose-env]: Docker Compose's variable-interpolation docs state:
+    "When executed without an explicit `--env-file` flag, Compose searches
+    for an `.env` file in your working directory (PWD) and loads values
+    both for self-configuration and interpolation." See
+    <https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/>.
 
 ## Suggested keys (illustrative, not final)
 
@@ -98,9 +104,26 @@ export
 endif
 ```
 
-Three lines. Variables in `.env` become Make variables AND are exported
-into every recipe's environment, so child Ruby/Python/shell processes
-see them.
+Three lines. `include` directs Make to read another makefile inline[^make-include];
+`export` by itself toggles the implicit-export-all mode so every
+subsequently-defined variable (including the ones just pulled in via
+`include`) ends up in the environment of recipe child processes[^make-export].
+That covers the Ruby (Vagrantfile), Python (pyinfra), and shell (`docker`,
+`vagrant`) sub-processes recipes spawn.
+
+[^make-include]: GNU Make manual, "Including Other Makefiles":
+    "The `include` directive tells make to suspend reading the current
+    makefile and read one or more other makefiles before continuing." —
+    <https://www.gnu.org/software/make/manual/html_node/Include.html>.
+
+[^make-export]: GNU Make manual, "Communicating Variables to a
+    Sub-make": "If you want all variables to be exported by default, you
+    can use `export` by itself: `export`. This tells make that variables
+    which are not explicitly mentioned in an `export` or `unexport`
+    directive should be exported." With an export directive, "make adds
+    the variable and its value to the environment for running each line
+    of the recipe." —
+    <https://www.gnu.org/software/make/manual/html_node/Variables_002fRecursion.html>.
 
 ### Vagrantfile
 
@@ -135,8 +158,10 @@ typos surface as `AttributeError` instead of silent `None`.
 ### Docker Compose
 
 Compose v2 reads `.env` from the project dir (where the YAML lives) on
-its own. If our `.env` lives at `vagrant-demo/.env` but compose runs
-inside `/opt/bidsflux/stack/`, we either:
+its own — see footnote [^compose-env] above; the docs are explicit that
+without `--env-file`, Compose looks in the working directory next to
+`compose.yaml`. If our `.env` lives at `vagrant-demo/.env` but compose
+runs inside `/opt/bidsflux/stack/`, we either:
 
 1. `cp .env /opt/bidsflux/stack/.env` during stage 3 (simple), or
 2. symlink / bind-mount, or

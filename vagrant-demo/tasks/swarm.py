@@ -3,6 +3,20 @@
 Network name and gateway match the upstream calgary stack
 (docker-compose.stack.yml expects ``cpip_network`` to exist as an
 external attachable overlay network before deploy).
+
+References:
+
+- ``docker swarm init --data-path-port`` flag (we set 9789 to override
+  the default 4789): "Port number used to send data; if no value is set
+  or is set to 0, the default port (4789) is used." —
+  https://docs.docker.com/reference/cli/docker/swarm/init/
+- ``host.data.<key>`` access. pyinfra 3.x's ``HostData`` exposes data
+  via ``__getattr__`` only and does **not** implement ``__getitem__``;
+  ``host.data["bidsflux_swarm_advertise_addr"]`` raises
+  ``TypeError: 'HostData' object is not subscriptable`` at runtime.
+  See the class definition (``__getattr__``, ``__setattr__``, ``.get()``
+  but no ``__getitem__``) at
+  https://github.com/pyinfra-dev/pyinfra/blob/812a1499dfb2979848bf4603fe02017c6bf149e7/src/pyinfra/api/host.py#L48-L96
 """
 
 from pathlib import Path
@@ -21,6 +35,8 @@ LOCAL_JOIN_FILE = CACHE_DIR / "swarm-join.sh"
 
 
 def init_manager() -> None:
+    # Attribute access only — host.data has __getattr__ but no __getitem__.
+    # see https://github.com/pyinfra-dev/pyinfra/blob/812a1499dfb2979848bf4603fe02017c6bf149e7/src/pyinfra/api/host.py#L66-L77
     advertise = host.data.bidsflux_swarm_advertise_addr
 
     server.shell(
@@ -69,6 +85,7 @@ def join_worker() -> None:
             "after the manager has been initialised."
         )
 
+    # Attribute access — see the init_manager() comment above.
     advertise = host.data.bidsflux_swarm_advertise_addr
 
     files.put(
