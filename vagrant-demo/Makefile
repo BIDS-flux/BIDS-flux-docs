@@ -9,6 +9,18 @@ INVENTORY ?= inventories/vagrant.py
 CACHE_DIR := .cache
 SSH_CONFIG := $(CACHE_DIR)/ssh_config
 
+# Pass-through flags for every pyinfra invocation. Default empty
+# (interactive — pyinfra prints a "Detected changes / Press enter to
+# execute" gate). Set PYINFRA_YES=-y to auto-confirm:
+#
+#     PYINFRA_YES=-y make deploy
+#     PYINFRA_YES=-y make deploy-step4-stack
+#
+# Or `-q` to also quieten pyinfra's per-op detection table:
+#     PYINFRA_FLAGS="-y -q" make deploy
+PYINFRA_YES   ?=
+PYINFRA_FLAGS ?= $(PYINFRA_YES)
+
 # Inventory-side host aliases — must match `Host data` / `Host proc` in
 # vagrant ssh-config output, and the `config.vm.define` names in the
 # Vagrantfile. Distinct from the swarm placement constraint hostnames
@@ -34,6 +46,11 @@ help:
 	@echo "  destroy                  -- destroy both VMs (irreversible)"
 	@echo "  clean-secrets            -- clear .secrets-generated marker on data"
 	@echo "  clean-cache              -- remove local $(CACHE_DIR)/ (ssh_config, swarm token, …)"
+	@echo
+	@echo "Useful overrides:"
+	@echo "  PYINFRA_YES=-y           -- skip pyinfra's 'Press enter to execute' prompt"
+	@echo "  PYINFRA_FLAGS='-y -q'    -- combined flags (yes + quieten the changes table)"
+	@echo "  Example:  PYINFRA_YES=-y make deploy"
 
 init:
 	git -C .. submodule update --init --recursive \
@@ -71,10 +88,10 @@ deploy: deploy-step1-prereqs deploy-step2-swarm-init swarm-fetch-join \
         deploy-step3-swarm-join deploy-step4-stack
 
 deploy-step1-prereqs: $(SSH_CONFIG)
-	$(PYINFRA) --sudo $(INVENTORY) deploy_prereqs.py
+	$(PYINFRA) $(PYINFRA_FLAGS) --sudo $(INVENTORY) deploy_prereqs.py
 
 deploy-step2-swarm-init: $(SSH_CONFIG)
-	$(PYINFRA) --sudo --limit $(DATA_NAME) $(INVENTORY) deploy_swarm_init.py
+	$(PYINFRA) $(PYINFRA_FLAGS) --sudo --limit $(DATA_NAME) $(INVENTORY) deploy_swarm_init.py
 
 swarm-fetch-join:
 	mkdir -p $(CACHE_DIR)
@@ -89,10 +106,10 @@ swarm-fetch-join:
 	 esac
 
 deploy-step3-swarm-join: $(SSH_CONFIG)
-	$(PYINFRA) --sudo --limit $(PROC_NAME) $(INVENTORY) deploy_swarm_join.py
+	$(PYINFRA) $(PYINFRA_FLAGS) --sudo --limit $(PROC_NAME) $(INVENTORY) deploy_swarm_join.py
 
 deploy-step4-stack: $(SSH_CONFIG)
-	$(PYINFRA) --sudo --limit $(DATA_NAME) $(INVENTORY) deploy_stack.py
+	$(PYINFRA) $(PYINFRA_FLAGS) --sudo --limit $(DATA_NAME) $(INVENTORY) deploy_stack.py
 
 smoke:
 	@echo ">>> GitLab health"
