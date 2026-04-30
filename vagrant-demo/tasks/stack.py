@@ -134,18 +134,31 @@ def deploy_on_manager() -> None:
     # scratch-for-setup (the post_gitlab_install bootstrap container, data only).
     # Build context is `deploy/` (which contains the Dockerfiles + supporting
     # files); we copy our seeded bundle.crt + post_gitlab_install.py in first.
+    #
+    # Dockerfile-scratch is `FROM neurodebian` (currently Trixie / Python 3.13)
+    # whose pip3 enforces PEP 668 — system-wide installs error with
+    # "externally-managed-environment". Upstream's Dockerfile predates this.
+    # We render a local Dockerfile-scratch.bidsflux with --break-system-packages
+    # on the offending RUN line; the submodule file stays untouched.
     server.shell(
         name="build local images (gitlab-runner-calgary, scratch-for-setup)",
         commands=[
             "set -eu; "
             f"cd {STACK_VM_PATH}/deploy; "
             "cp ../secrets/bundle.crt ./bundle.crt; "
-            # cp post_gitlab_install.py — it's already in deploy/, so no-op.
             "if ! docker image inspect gitlab-runner-calgary:latest >/dev/null 2>&1; then "
             "  docker build -t gitlab-runner-calgary:latest -f Dockerfile-runner .; "
             "fi; "
+            # Patch upstream's pip3 RUN line to satisfy PEP 668. The optional
+            # capture of an existing flag makes the substitution idempotent —
+            # the leftmost match always lands on `RUN pip3 install` and the
+            # output is `RUN pip3 install --break-system-packages …`
+            # regardless of whether the flag was already there.
+            "sed -E "
+            "'s/^(RUN pip3 install)( --break-system-packages)?( )/\\1 --break-system-packages\\3/' "
+            "Dockerfile-scratch > Dockerfile-scratch.bidsflux; "
             "if ! docker image inspect scratch-for-setup:latest >/dev/null 2>&1; then "
-            "  docker build -t scratch-for-setup:latest -f Dockerfile-scratch .; "
+            "  docker build -t scratch-for-setup:latest -f Dockerfile-scratch.bidsflux .; "
             "fi",
         ],
         _sudo=True,
