@@ -11,15 +11,12 @@ SSH_CONFIG := $(CACHE_DIR)/ssh_config
 
 # Pass-through flags for every pyinfra invocation. Default empty
 # (interactive — pyinfra prints a "Detected changes / Press enter to
-# execute" gate). Set PYINFRA_YES=-y to auto-confirm:
+# execute" gate). Set PYINFRA_FLAGS=-y to auto-confirm, or combine
+# with -q to quieten the per-op detection table:
 #
-#     PYINFRA_YES=-y make deploy
-#     PYINFRA_YES=-y make deploy-step4-stack
-#
-# Or `-q` to also quieten pyinfra's per-op detection table:
-#     PYINFRA_FLAGS="-y -q" make deploy
-PYINFRA_YES   ?=
-PYINFRA_FLAGS ?= $(PYINFRA_YES)
+#     PYINFRA_FLAGS=-y make deploy
+#     PYINFRA_FLAGS='-y -q' make deploy
+PYINFRA_FLAGS ?=
 
 # Inventory-side host aliases — must match `Host data` / `Host proc` in
 # vagrant ssh-config output, and the `config.vm.define` names in the
@@ -48,9 +45,9 @@ help:
 	@echo "  clean-cache              -- remove local $(CACHE_DIR)/ (ssh_config, swarm token, …)"
 	@echo
 	@echo "Useful overrides:"
-	@echo "  PYINFRA_YES=-y           -- skip pyinfra's 'Press enter to execute' prompt"
-	@echo "  PYINFRA_FLAGS='-y -q'    -- combined flags (yes + quieten the changes table)"
-	@echo "  Example:  PYINFRA_YES=-y make deploy"
+	@echo "  PYINFRA_FLAGS=-y         -- skip pyinfra's 'Press enter to execute' prompt"
+	@echo "  PYINFRA_FLAGS='-y -q'    -- skip prompt + quieten the per-op changes table"
+	@echo "  Example:  PYINFRA_FLAGS=-y make deploy"
 
 init:
 	git -C .. submodule update --init --recursive \
