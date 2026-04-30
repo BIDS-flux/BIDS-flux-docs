@@ -1,4 +1,4 @@
-.PHONY: help init up halt destroy deploy ssh-config \
+.PHONY: help init up halt destroy cleanse clean-redeploy deploy ssh-config \
         deploy-step1-prereqs deploy-step2-swarm-init swarm-fetch-join \
         deploy-step3-swarm-join deploy-step4-stack \
         smoke status clean-secrets clean-cache
@@ -41,6 +41,8 @@ help:
 	@echo "  status                   -- vagrant status + docker service ls on data"
 	@echo "  halt                     -- stop both VMs"
 	@echo "  destroy                  -- destroy both VMs (irreversible)"
+	@echo "  cleanse                  -- destroy + wipe libvirt 'bidsflux' net + clean local state"
+	@echo "  clean-redeploy           -- cleanse + up + deploy (full from-scratch cycle)"
 	@echo "  clean-secrets            -- clear .secrets-generated marker on data"
 	@echo "  clean-cache              -- remove local $(CACHE_DIR)/ (ssh_config, swarm token, …)"
 	@echo
@@ -64,6 +66,24 @@ halt:
 
 destroy:
 	$(VAGRANT) destroy -f
+
+# Wipe everything `make destroy` leaves behind: the libvirt private network
+# (vagrant doesn't tear it down — re-up may complain about a stale subnet)
+# and project-local state (ssh_config, swarm token, run logs). The `-` prefix
+# on `sudo virsh` makes the commands non-fatal so re-running is idempotent
+# even when the network has already been removed (or never existed).
+cleanse: destroy
+	-sudo virsh net-destroy  bidsflux 2>/dev/null
+	-sudo virsh net-undefine bidsflux 2>/dev/null
+	rm -rf $(CACHE_DIR)
+	rm -f log.txt log-deploy.txt out.txt
+
+# One target for the full from-scratch cycle. Recursive `$(MAKE)` so each
+# step inherits PYINFRA_FLAGS and friends from the user's environment.
+# Usage:  PYINFRA_FLAGS=-y make clean-redeploy
+clean-redeploy: cleanse
+	$(MAKE) up
+	$(MAKE) deploy
 
 # Discover SSH coordinates straight from Vagrant. This dodges the whole
 # `~/.vagrant.d/insecure_private_key` (legacy, RSA-only) vs the modern
