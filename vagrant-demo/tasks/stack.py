@@ -59,9 +59,15 @@ def deploy_on_manager() -> None:
         _sudo=True,
     )
 
-    # Stub the 8 secrets that upstream expects as ./secrets/* but doesn't
-    # create. Random base64 for tokens; self-signed cert/key for the gitlab
-    # service's TLS.
+    # Stub the 11 file-secrets the upstream calgary docker-compose.stack.yml
+    # declares under top-level `secrets:` with `file:` source — compose reads
+    # those files at `docker stack deploy` time. We seed missing ones with
+    # random base64 (or a self-signed cert pair for bundle.crt/cert.key) so a
+    # fresh deploy succeeds; real values get rotated in via post_install.
+    #
+    # The 11 files match the compose's `secrets:` block at calgary SHA
+    # 1bfcd55…: gitlab_root, gitlab_local, gitlab_remote, bundle.crt, cert.key,
+    # minio_pass, mc.conf, dicom_token, s3_id, s3_key, passphrase.
     server.shell(
         name="seed secrets/ stubs",
         commands=[
@@ -69,7 +75,7 @@ def deploy_on_manager() -> None:
             f"cd {STACK_VM_PATH}; "
             "mkdir -p secrets; "
             "cd secrets; "
-            "for f in gitlab_local gitlab_remote dicom_token s3_id s3_key passphrase mc.conf minio_pass; do "
+            "for f in gitlab_root gitlab_local gitlab_remote dicom_token s3_id s3_key passphrase mc.conf minio_pass; do "
             "  if [ ! -s \"$f\" ]; then openssl rand -base64 24 > \"$f\"; fi; "
             "done; "
             # cert/key referenced by the gitlab service via secret mounts.
@@ -79,7 +85,12 @@ def deploy_on_manager() -> None:
             "    -subj '/CN=itappcpipdp01.uc.ucalgary.ca' "
             "    -addext 'subjectAltName=DNS:itappcpipdp01.uc.ucalgary.ca,DNS:localhost,IP:127.0.0.1'; "
             "fi; "
-            "chmod 0600 ./*",
+            "chmod 0600 ./*; "
+            # Print the gitlab_root password (it's the only one the user needs
+            # to type by hand — to log into the GitLab UI as root the first
+            # time). MinIO/MC creds are bot-bot from there on.
+            "echo '>>> stub gitlab_root password (use this to log into the GitLab UI):'; "
+            "cat gitlab_root",
         ],
         _sudo=True,
     )
