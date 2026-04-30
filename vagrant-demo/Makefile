@@ -78,7 +78,10 @@ deploy-step2-swarm-init: $(SSH_CONFIG)
 
 swarm-fetch-join:
 	mkdir -p $(CACHE_DIR)
-	$(VAGRANT) ssh $(DATA_NAME) -c "sudo cat /etc/bidsflux/swarm-token" > $(CACHE_DIR)/swarm-token
+	# Strip CR — `vagrant ssh -c` may allocate a pty that translates LF→CRLF,
+	# leaving a stray \r on the token line. `docker swarm join --token
+	# SWMTKN-…\r` then fails with "invalid join token".
+	$(VAGRANT) ssh $(DATA_NAME) -c "sudo cat /etc/bidsflux/swarm-token" | tr -d '\r' > $(CACHE_DIR)/swarm-token
 	chmod 0644 $(CACHE_DIR)/swarm-token
 	@case "$$(cat $(CACHE_DIR)/swarm-token)" in \
 	    SWMTKN-*) echo "fetched swarm token (SWMTKN-…)";; \

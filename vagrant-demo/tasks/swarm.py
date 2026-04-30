@@ -178,7 +178,9 @@ def join_worker() -> None:
             "   fi; "
             f"   echo 'reachability probe to {manager}:2377/tcp OK'; "
             "fi; "
-            "TOKEN=$(cat /etc/bidsflux/swarm-token); "
+            # Strip any whitespace (CR/LF/space) — defence in depth against
+            # vagrant ssh adding \r when allocating a pty for the fetch.
+            "TOKEN=$(tr -d '[:space:]' < /etc/bidsflux/swarm-token); "
             "test -n \"$TOKEN\"; "
             "case \"$TOKEN\" in "
             "  SWMTKN-*) ;; "
