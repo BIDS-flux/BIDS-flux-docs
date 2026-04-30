@@ -44,6 +44,50 @@ to the `montreal-update2dev` branch (uses `imagerie-server-{1,2}`).
 
 - [ ] Add a docker-compose override file to demonstrate (a).
 
+## switch demo VM hostnames away from `*.uc.ucalgary.ca`
+
+The current Vagrantfile pins the VM hostnames to `itappcpip{dp,pp}01.uc.ucalgary.ca` because that's what upstream's swarm placement expects. That's misleading for *any* deployment that isn't UCalgary's — and the demo is the most prominent "isn't UCalgary's" case.
+
+Pick neutral names — candidates:
+
+- `data.bids-flux.localnet` / `proc.bids-flux.localnet`
+- `data.bids-flux.example.com` / `proc.bids-flux.example.com` (RFC 2606 reserved domain — best for docs)
+- `bids-flux-data` / `bids-flux-proc` (short, no domain)
+
+Implementing this needs the docker-compose override from the previous
+TODO — the placement constraints have to be rewritten in lockstep, or
+the upstream compose patched in a fork. Don't ship the rename without
+that override or stack deploy will silently park services at 0/1.
+
+## centralise the deployment configuration
+
+Right now site-specific values are scattered across at least four files:
+
+- `Vagrantfile` — VM hostnames, IPs, resource sizing
+- `inventories/vagrant.py` — IPs again, swarm advertise/manager addresses
+- `tasks/swarm.py` — overlay subnet/gateway, swarm data-path port
+- `tasks/stack.py` — stack name (`cpip`), `STACK_VM_PATH`, certificate CN
+
+Each has to move in lockstep when adapting the demo to a real site. The
+TODO is to consolidate into a single source of truth — likely a
+top-level `config.env` (or `config.toml`) that `Vagrantfile` parses with
+Ruby, the inventory parses with Python, and the Makefile sources for
+shell-side use.
+
+Constraints to research first:
+
+- Does pyinfra v3 support reading a per-deploy config file cleanly, or
+  do we ship our own loader in `tasks/_config.py` and import it from
+  inventory + tasks?
+- Does Vagrantfile's Ruby parse the same format the Python side wants?
+  An `.env`-style file is the easiest common denominator; TOML needs a
+  Ruby parser.
+- Should overrides be per-site (one config file per inventory) or a
+  single site-agnostic file with env-var overrides?
+
+Until this lands, treat the four files above as a single conceptual
+unit when changing site-specific values.
+
 ## stub secrets
 
 `deploy/generate_secrets.sh` mints only 3 docker secrets

@@ -35,6 +35,10 @@ make smoke               # curl health endpoints on the host
 
 `make deploy` chains:
 
+    0. ssh-config              (Make target: writes .cache/ssh_config from
+                                `vagrant ssh-config data proc` — pyinfra
+                                reads this so we don't have to guess where
+                                Vagrant put the SSH key)
     1. deploy-step1-prereqs    (pyinfra against both VMs: docker, datalad, openssl)
     2. deploy-step2-swarm-init (pyinfra --limit data: swarm init + cpip_network)
     3. swarm-fetch-join        (Make target: vagrant ssh into data, dump
@@ -46,7 +50,9 @@ make smoke               # curl health endpoints on the host
                                 wait for gitlab healthy, run post-install if
                                 GITLAB_TOKEN is set)
 
-Each step is idempotent and can be re-run on its own.
+Each step is idempotent and can be re-run on its own. To regenerate the
+SSH config after a `vagrant reload` or destroy/up cycle: `rm $(make -p
+2>/dev/null | awk '/^SSH_CONFIG /{print $$3}')` then `make ssh-config`.
 
 ## Manual gate (after first deploy)
 
