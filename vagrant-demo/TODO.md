@@ -177,6 +177,40 @@ Stage 4 prints an instructional message if `GITLAB_TOKEN` is missing.
       Wire into `tasks/post_install.py` so the demo is fully hands-off.
 - [ ] Validate scope set against gitlab-ee 17.7 token API.
 
+### Extract multi-line shell to `files/scripts/` + shellcheck CI
+
+Today most of `tasks/{prereqs,swarm,stack,post_install}.py` is
+multi-statement shell embedded in Python f-strings. Quoting hell
+(`\\1` for sed backrefs, `\"` everywhere), no syntax highlighting,
+not testable in isolation. pyinfra ships a first-class operation for
+this: [`server.script`](https://docs.pyinfra.com/en/3.x/operations/server.html#server-script)
+uploads a local file and executes it remotely; the variant
+`server.script_template` Jinja-renders first.
+
+Recommended layout once phase 0 is closed:
+
+```
+vagrant-demo/files/scripts/
+├── README.md              # "shipped via server.script"
+├── swarm_init.sh          # set -eu; pre-flight; docker swarm init; verify
+├── swarm_join.sh          # token + advertise as $1 $2
+├── seed_secrets.sh        # 11 file-stubs + cert
+└── build_local_images.sh  # docker build runner + scratch
+```
+
+Add `# shellcheck shell=bash` to each script; new `make shellcheck`
+target running `shellcheck files/scripts/*.sh`; gate in CI.
+
+- [ ] Pick the dividing line — keep `server.shell` for one-liners
+      (e.g. `mkdir`, single `docker swarm leave`), use
+      `server.script` for everything `set -eu`-prefaced.
+- [ ] Decide args-via-`$1$2` vs. `_env={...}` vs.
+      `server.script_template` per script (3+ params probably wants
+      template; few-args wants positional).
+- [ ] Acknowledge `server.script` is non-idempotent per pyinfra
+      (no built-in change detection) — the scripts already encode
+      `if [ ! -X ]; then …; fi` guards so re-runs are still cheap.
+
 ### GitLab Runner registration
 
 `deploy/runner_registration.py` (calgary) prompts interactively for the
