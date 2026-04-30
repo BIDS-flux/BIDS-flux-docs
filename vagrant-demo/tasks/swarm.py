@@ -21,18 +21,23 @@ References:
 Shell-script discipline
 -----------------------
 
-Each shell command sets ``set -eu -o pipefail`` and avoids the two
-silent-failure idioms we got bitten by in TODO Phase 0:
+Each shell command sets ``set -eu`` and avoids the silent-failure
+idioms we got bitten by in TODO Phase 0:
 
 1. ``cmd1 || cmd2`` — masks ``cmd2`` failures because the whole expr
    returns ``cmd2``'s exit code, but pyinfra reports the operation as
    `Success` if the spawned shell ran at all. Replaced by explicit
    ``if … then … fi`` blocks with explicit ``exit 1`` on the failure
    path.
-2. ``TOKEN=$(cmd)`` — a bash assignment always returns 0 even when the
+2. ``TOKEN=$(cmd)`` — a shell assignment always returns 0 even when the
    command-substitution command failed, so a downstream ``[ -n "$TOKEN" ]``
-   check is required to surface the failure. ``set -o pipefail`` does
+   check is required to surface the failure. ``set -o pipefail`` would
    not help with this; only an explicit non-empty check does.
+3. ``sed | sh`` and other genuine pipes — pyinfra invokes commands
+   under ``/bin/sh`` (dash on Ubuntu), which does **not** support
+   ``set -o pipefail``. Where a real pipe is necessary, restructure
+   into ``VAR=$(sed …); [ -n "$VAR" ]; eval "$VAR"`` (or a temp file
+   intermediate) so a failure in the producer surfaces.
 
 Plus a post-condition check after ``docker swarm init`` that we are
 actually a manager (``Swarm.ControlAvailable == true``) — otherwise the
@@ -64,7 +69,7 @@ def init_manager() -> None:
         name="swarm init (idempotent, verified manager)",
         commands=[
             # Single bash invocation so $STATE / $MGR persist.
-            "set -eu -o pipefail; "
+            "set -eu; "
             # Pre-flight: the advertise IP must actually be bound on a NIC,
             # else `docker swarm init` "succeeds" but doesn't manage anything
             # we'd recognise. This is the libvirt boot-timing trap.
@@ -99,7 +104,7 @@ def init_manager() -> None:
     server.shell(
         name="dump worker join command (WORKER_IP placeholder)",
         commands=[
-            "set -eu -o pipefail; "
+            "set -eu; "
             # `TOKEN=$(...)` returns 0 even on failure, so check non-empty.
             "TOKEN=$(docker swarm join-token worker -q); "
             "test -n \"$TOKEN\"; "
@@ -145,7 +150,7 @@ def join_worker() -> None:
     server.shell(
         name="join swarm if not already (verified worker)",
         commands=[
-            "set -eu -o pipefail; "
+            "set -eu; "
             f"if ! ip -4 addr show | grep -q 'inet {advertise}/'; then "
             f"  echo 'ERROR: advertise-addr {advertise} not on any local interface' >&2; "
             "   ip -4 addr show >&2; "
@@ -155,7 +160,12 @@ def join_worker() -> None:
             "if [ \"$STATE\" = active ]; then "
             "  echo 'already in swarm'; exit 0; "
             "fi; "
-            f"sed 's|WORKER_IP|{advertise}|' /etc/bidsflux/swarm-join.sh | sh -; "
+            # Restructured to avoid `sed | sh` — pyinfra runs commands under
+            # /bin/sh (dash on Ubuntu) which lacks `-o pipefail`, so we'd miss
+            # a sed failure. Read into a variable, assert non-empty, then exec.
+            f"JOIN_CMD=$(sed 's|WORKER_IP|{advertise}|' /etc/bidsflux/swarm-join.sh); "
+            "test -n \"$JOIN_CMD\"; "
+            "eval \"$JOIN_CMD\"; "
             # Post-condition: we should now be active.
             "STATE=$(docker info --format '{{.Swarm.LocalNodeState}}'); "
             "if [ \"$STATE\" != active ]; then "

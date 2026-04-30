@@ -14,10 +14,12 @@ they let stack deploy succeed enough to bring GitLab + MinIO up. Real values
 get rotated in via post_install.run_on_manager().
 
 Shell-script discipline: every multi-statement command starts with
-``set -eu -o pipefail`` so partial failures abort the operation
-instead of being papered over by ``cmd1 || cmd2`` short-circuits or
-``VAR=$(cmd)`` assignments that always return 0. See `tasks/swarm.py`
-for the full rationale (TODO Phase 0).
+``set -eu`` (not ``-o pipefail``: pyinfra runs commands under
+``/bin/sh`` which is dash on Ubuntu and does not support pipefail).
+Partial failures abort the operation instead of being papered over
+by ``cmd1 || cmd2`` short-circuits or ``VAR=$(cmd)`` assignments
+that always return 0. See `tasks/swarm.py` for the full rationale
+(TODO Phase 0).
 """
 
 from pathlib import Path
@@ -50,7 +52,7 @@ def deploy_on_manager() -> None:
     server.shell(
         name="create_directory.sh (/data/...)",
         commands=[
-            "set -eu -o pipefail; "
+            "set -eu; "
             f"cd {STACK_VM_PATH}; "
             "bash deploy/create_directory.sh",
         ],
@@ -63,7 +65,7 @@ def deploy_on_manager() -> None:
     server.shell(
         name="seed secrets/ stubs",
         commands=[
-            "set -eu -o pipefail; "
+            "set -eu; "
             f"cd {STACK_VM_PATH}; "
             "mkdir -p secrets; "
             "cd secrets; "
@@ -85,10 +87,13 @@ def deploy_on_manager() -> None:
     server.shell(
         name="generate_secrets (idempotent)",
         commands=[
-            "set -eu -o pipefail; "
+            "set -eu; "
             f"cd {STACK_VM_PATH}; "
             "if [ ! -f .secrets-generated ]; then "
-            "  bash deploy/generate_secrets.sh 2>&1 | tee .secrets-output; "
+            # Avoid `… | tee` (pyinfra runs under /bin/sh — no pipefail);
+            # write to file, then surface to stdout via cat.
+            "  bash deploy/generate_secrets.sh > .secrets-output 2>&1; "
+            "  cat .secrets-output; "
             "  touch .secrets-generated; "
             "fi",
         ],
@@ -98,7 +103,7 @@ def deploy_on_manager() -> None:
     server.shell(
         name=f"docker stack deploy {STACK_NAME}",
         commands=[
-            "set -eu -o pipefail; "
+            "set -eu; "
             f"cd {STACK_VM_PATH}; "
             f"docker stack deploy -c docker-compose.stack.yml {STACK_NAME}",
         ],

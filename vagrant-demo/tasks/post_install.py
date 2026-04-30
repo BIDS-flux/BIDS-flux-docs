@@ -39,7 +39,7 @@ def run_on_manager() -> None:
     server.shell(
         name="python venv for deploy scripts",
         commands=[
-            "set -eu -o pipefail; "
+            "set -eu; "
             f"cd {STACK_VM_PATH}; "
             "if [ ! -d .venv ]; then python3 -m venv --system-site-packages .venv; fi; "
             ". .venv/bin/activate; "
@@ -51,7 +51,7 @@ def run_on_manager() -> None:
     server.shell(
         name="register gitlab runners",
         commands=[
-            "set -eu -o pipefail; "
+            "set -eu; "
             f"cd {STACK_VM_PATH}; "
             ". .venv/bin/activate; "
             f"export GITLAB_TOKEN={gitlab_token}; "
@@ -68,7 +68,7 @@ def run_on_manager() -> None:
     server.shell(
         name="post_gitlab_install (creates bots, mirrors repos)",
         commands=[
-            "set -eu -o pipefail; "
+            "set -eu; "
             f"cd {STACK_VM_PATH}; "
             ". .venv/bin/activate; "
             f"export GITLAB_TOKEN={gitlab_token}; "
