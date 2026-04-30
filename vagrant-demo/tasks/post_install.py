@@ -39,9 +39,10 @@ def run_on_manager() -> None:
     server.shell(
         name="python venv for deploy scripts",
         commands=[
-            f"cd {STACK_VM_PATH} && "
-            "test -d .venv || python3 -m venv --system-site-packages .venv; "
-            ". .venv/bin/activate && "
+            "set -eu -o pipefail; "
+            f"cd {STACK_VM_PATH}; "
+            "if [ ! -d .venv ]; then python3 -m venv --system-site-packages .venv; fi; "
+            ". .venv/bin/activate; "
             "pip install --quiet python-gitlab requests datalad",
         ],
         _sudo=True,
@@ -50,12 +51,13 @@ def run_on_manager() -> None:
     server.shell(
         name="register gitlab runners",
         commands=[
-            f"cd {STACK_VM_PATH} && . .venv/bin/activate && "
-            f"GITLAB_TOKEN={gitlab_token} "
+            "set -eu -o pipefail; "
+            f"cd {STACK_VM_PATH}; "
+            ". .venv/bin/activate; "
+            f"export GITLAB_TOKEN={gitlab_token}; "
             "python deploy/runner_registration.py "
             "$HOME/.docker/config.json deploy/runner_configuration.json "
-            "cpip_gitlab-runner.x && "
-            f"GITLAB_TOKEN={gitlab_token} "
+            "cpip_gitlab-runner.x; "
             "python deploy/runner_registration.py "
             "$HOME/.docker/config.json deploy/runner_configuration-dind.json "
             "cpip_gitlab-runner-dind.x",
@@ -66,8 +68,10 @@ def run_on_manager() -> None:
     server.shell(
         name="post_gitlab_install (creates bots, mirrors repos)",
         commands=[
-            f"cd {STACK_VM_PATH} && . .venv/bin/activate && "
-            f"GITLAB_TOKEN={gitlab_token} "
+            "set -eu -o pipefail; "
+            f"cd {STACK_VM_PATH}; "
+            ". .venv/bin/activate; "
+            f"export GITLAB_TOKEN={gitlab_token}; "
             "python deploy/post_gitlab_install.py",
         ],
         _sudo=True,

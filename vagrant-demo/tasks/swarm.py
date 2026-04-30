@@ -17,6 +17,27 @@ References:
   See the class definition (``__getattr__``, ``__setattr__``, ``.get()``
   but no ``__getitem__``) at
   https://github.com/pyinfra-dev/pyinfra/blob/812a1499dfb2979848bf4603fe02017c6bf149e7/src/pyinfra/api/host.py#L48-L96
+
+Shell-script discipline
+-----------------------
+
+Each shell command sets ``set -eu -o pipefail`` and avoids the two
+silent-failure idioms we got bitten by in TODO Phase 0:
+
+1. ``cmd1 || cmd2`` — masks ``cmd2`` failures because the whole expr
+   returns ``cmd2``'s exit code, but pyinfra reports the operation as
+   `Success` if the spawned shell ran at all. Replaced by explicit
+   ``if … then … fi`` blocks with explicit ``exit 1`` on the failure
+   path.
+2. ``TOKEN=$(cmd)`` — a bash assignment always returns 0 even when the
+   command-substitution command failed, so a downstream ``[ -n "$TOKEN" ]``
+   check is required to surface the failure. ``set -o pipefail`` does
+   not help with this; only an explicit non-empty check does.
+
+Plus a post-condition check after ``docker swarm init`` that we are
+actually a manager (``Swarm.ControlAvailable == true``) — otherwise the
+stack-deploy step in the next stage fails opaquely with "This node is
+not a swarm manager".
 """
 
 from pathlib import Path
@@ -40,11 +61,31 @@ def init_manager() -> None:
     advertise = host.data.bidsflux_swarm_advertise_addr
 
     server.shell(
-        name="swarm init (idempotent)",
+        name="swarm init (idempotent, verified manager)",
         commands=[
-            "docker info --format '{{.Swarm.LocalNodeState}}' | grep -q active "
-            f"|| docker swarm init --data-path-port {SWARM_DATA_PORT} "
-            f"--advertise-addr {advertise}",
+            # Single bash invocation so $STATE / $MGR persist.
+            "set -eu -o pipefail; "
+            # Pre-flight: the advertise IP must actually be bound on a NIC,
+            # else `docker swarm init` "succeeds" but doesn't manage anything
+            # we'd recognise. This is the libvirt boot-timing trap.
+            f"if ! ip -4 addr show | grep -q 'inet {advertise}/'; then "
+            f"  echo 'ERROR: advertise-addr {advertise} not on any local interface' >&2; "
+            "   ip -4 addr show >&2; "
+            "   exit 1; "
+            "fi; "
+            "STATE=$(docker info --format '{{.Swarm.LocalNodeState}}'); "
+            "echo \"swarm state before init: $STATE\"; "
+            "if [ \"$STATE\" != active ]; then "
+            f"  docker swarm init --data-path-port {SWARM_DATA_PORT} --advertise-addr {advertise}; "
+            "fi; "
+            # Post-condition: not just active, but a *manager*.
+            "MGR=$(docker info --format '{{.Swarm.ControlAvailable}}'); "
+            "echo \"ControlAvailable after init: $MGR\"; "
+            "if [ \"$MGR\" != true ]; then "
+            "  echo 'ERROR: node is active in swarm but not a manager' >&2; "
+            "  docker info --format '{{json .Swarm}}' >&2; "
+            "  exit 1; "
+            "fi",
         ],
         _sudo=True,
     )
@@ -58,10 +99,13 @@ def init_manager() -> None:
     server.shell(
         name="dump worker join command (WORKER_IP placeholder)",
         commands=[
+            "set -eu -o pipefail; "
+            # `TOKEN=$(...)` returns 0 even on failure, so check non-empty.
             "TOKEN=$(docker swarm join-token worker -q); "
+            "test -n \"$TOKEN\"; "
             f"printf 'docker swarm join --token %s "
             f"--advertise-addr WORKER_IP {advertise}:2377\\n' \"$TOKEN\" "
-            "> /etc/bidsflux/swarm-join.sh",
+            "> /etc/bidsflux/swarm-join.sh; "
             "chmod 0644 /etc/bidsflux/swarm-join.sh",
         ],
         _sudo=True,
@@ -70,9 +114,11 @@ def init_manager() -> None:
     server.shell(
         name=f"overlay network {OVERLAY_NET}",
         commands=[
-            f"docker network inspect {OVERLAY_NET} >/dev/null 2>&1 "
-            "|| docker network create --driver=overlay --attachable "
-            f"--subnet={OVERLAY_SUBNET} --gateway={OVERLAY_GATEWAY} {OVERLAY_NET}",
+            "set -eu; "
+            f"if ! docker network inspect {OVERLAY_NET} >/dev/null 2>&1; then "
+            f"  docker network create --driver=overlay --attachable "
+            f"--subnet={OVERLAY_SUBNET} --gateway={OVERLAY_GATEWAY} {OVERLAY_NET}; "
+            "fi",
         ],
         _sudo=True,
     )
@@ -97,10 +143,26 @@ def join_worker() -> None:
     )
 
     server.shell(
-        name="join swarm if not already",
+        name="join swarm if not already (verified worker)",
         commands=[
-            "docker info --format '{{.Swarm.LocalNodeState}}' | grep -q active && exit 0; "
-            f"sed 's|WORKER_IP|{advertise}|' /etc/bidsflux/swarm-join.sh | sh -",
+            "set -eu -o pipefail; "
+            f"if ! ip -4 addr show | grep -q 'inet {advertise}/'; then "
+            f"  echo 'ERROR: advertise-addr {advertise} not on any local interface' >&2; "
+            "   ip -4 addr show >&2; "
+            "   exit 1; "
+            "fi; "
+            "STATE=$(docker info --format '{{.Swarm.LocalNodeState}}'); "
+            "if [ \"$STATE\" = active ]; then "
+            "  echo 'already in swarm'; exit 0; "
+            "fi; "
+            f"sed 's|WORKER_IP|{advertise}|' /etc/bidsflux/swarm-join.sh | sh -; "
+            # Post-condition: we should now be active.
+            "STATE=$(docker info --format '{{.Swarm.LocalNodeState}}'); "
+            "if [ \"$STATE\" != active ]; then "
+            "  echo 'ERROR: swarm join apparently succeeded but node not active' >&2; "
+            "  docker info --format '{{json .Swarm}}' >&2; "
+            "  exit 1; "
+            "fi",
         ],
         _sudo=True,
     )
