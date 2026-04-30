@@ -21,7 +21,7 @@ LOCAL_JOIN_FILE = CACHE_DIR / "swarm-join.sh"
 
 
 def init_manager() -> None:
-    advertise = host.data["bidsflux_swarm_advertise_addr"]
+    advertise = host.data.bidsflux_swarm_advertise_addr
 
     server.shell(
         name="swarm init (idempotent)",
@@ -69,7 +69,7 @@ def join_worker() -> None:
             "after the manager has been initialised."
         )
 
-    advertise = host.data["bidsflux_swarm_advertise_addr"]
+    advertise = host.data.bidsflux_swarm_advertise_addr
 
     files.put(
         name="upload join script",
