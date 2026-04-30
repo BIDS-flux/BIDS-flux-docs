@@ -1,0 +1,108 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Two-VM demo of the ni-dataops stack (calgary branch).
+#
+# VM hostnames are pinned to match the swarm placement constraints in
+# vagrant-demo/sourcedata/stack/docker-compose.stack.yml (calgary branch):
+#
+#     itappcpipdp01.uc.ucalgary.ca   (data-server / swarm manager)
+#     itappcpippp01.uc.ucalgary.ca   (proc-server / swarm worker)
+#
+# This is silly-looking but means we can deploy the upstream compose file
+# verbatim — no sed-rewriting on top of an external project. Switching to
+# Montreal-style hostnames means switching upstream branch (see TODO.md).
+#
+# Resource defaults can be overridden with env vars before `vagrant up`:
+#   BIDSFLUX_DATA_CPUS=6  BIDSFLUX_DATA_MEM=12288   (MB)
+#   BIDSFLUX_DATA_DISK=80                            (GB)
+#   BIDSFLUX_PROC_CPUS=4  BIDSFLUX_PROC_MEM=8192
+#   BIDSFLUX_PROC_DISK=40
+#   BIDSFLUX_BOX="generic/ubuntu2204"               # libvirt-compatible box
+#
+# Networking:
+#   - libvirt management network handles SSH (192.168.121.0/24, auto-assigned)
+#   - private network "bidsflux" carries Docker Swarm + cpip_network traffic
+#       data: 192.168.56.10
+#       proc: 192.168.56.11
+#   - forwarded ports (host -> data VM), aligned with calgary stack:
+#       8443 -> 443  (GitLab UI HTTPS)
+#       8080 -> 80   (GitLab UI HTTP)
+#       2223 -> 222  (GitLab git-over-SSH)
+#       5050 -> 5050 (GitLab container registry)
+#       9000 -> 9000 (MinIO API)
+#       9090 -> 9090 (MinIO console)
+#       2222 -> 22   (vagrant ssh data)
+
+Vagrant.require_version ">= 2.2.0"
+
+BOX        = ENV.fetch("BIDSFLUX_BOX",        "generic/ubuntu2204")
+DATA_CPUS  = ENV.fetch("BIDSFLUX_DATA_CPUS",  "6").to_i
+DATA_MEM   = ENV.fetch("BIDSFLUX_DATA_MEM",   "12288").to_i
+DATA_DISK  = ENV.fetch("BIDSFLUX_DATA_DISK",  "80").to_i
+PROC_CPUS  = ENV.fetch("BIDSFLUX_PROC_CPUS",  "4").to_i
+PROC_MEM   = ENV.fetch("BIDSFLUX_PROC_MEM",   "8192").to_i
+PROC_DISK  = ENV.fetch("BIDSFLUX_PROC_DISK",  "40").to_i
+
+DATA_HOST = "itappcpipdp01.uc.ucalgary.ca"
+PROC_HOST = "itappcpippp01.uc.ucalgary.ca"
+DATA_IP   = "192.168.56.10"
+PROC_IP   = "192.168.56.11"
+
+HOSTS_SNIPPET = <<~EOS
+  #{DATA_IP} #{DATA_HOST} data
+  #{PROC_IP} #{PROC_HOST} proc
+EOS
+
+Vagrant.configure("2") do |config|
+  config.vm.box = BOX
+  config.ssh.insert_key = false
+
+  config.vm.provider :libvirt do |lv|
+    lv.qemu_use_session = false
+    lv.management_network_name    = "vagrant-libvirt"
+    lv.management_network_address = "192.168.121.0/24"
+  end
+
+  config.vm.provision "shell",
+    name: "hosts",
+    inline: <<~SH
+      grep -q "#{DATA_HOST}" /etc/hosts || cat >> /etc/hosts <<'EOF'
+#{HOSTS_SNIPPET}
+EOF
+    SH
+
+  config.vm.define "data", primary: true do |data|
+    data.vm.hostname = DATA_HOST
+    data.vm.network :private_network, ip: DATA_IP, libvirt__network_name: "bidsflux"
+
+    data.vm.network :forwarded_port, guest: 443,  host: 8443, host_ip: "127.0.0.1"
+    data.vm.network :forwarded_port, guest: 80,   host: 8080, host_ip: "127.0.0.1"
+    data.vm.network :forwarded_port, guest: 222,  host: 2223, host_ip: "127.0.0.1"
+    data.vm.network :forwarded_port, guest: 5050, host: 5050, host_ip: "127.0.0.1"
+    data.vm.network :forwarded_port, guest: 9000, host: 9000, host_ip: "127.0.0.1"
+    data.vm.network :forwarded_port, guest: 9090, host: 9090, host_ip: "127.0.0.1"
+    data.vm.network :forwarded_port, guest: 22,   host: 2222, host_ip: "127.0.0.1", id: "ssh"
+
+    data.vm.provider :libvirt do |lv|
+      lv.cpus              = DATA_CPUS
+      lv.memory            = DATA_MEM
+      lv.machine_virtual_size = DATA_DISK
+      lv.cpu_mode          = "host-passthrough"
+      lv.nested            = true
+    end
+  end
+
+  config.vm.define "proc" do |proc|
+    proc.vm.hostname = PROC_HOST
+    proc.vm.network :private_network, ip: PROC_IP, libvirt__network_name: "bidsflux"
+
+    proc.vm.provider :libvirt do |lv|
+      lv.cpus              = PROC_CPUS
+      lv.memory            = PROC_MEM
+      lv.machine_virtual_size = PROC_DISK
+      lv.cpu_mode          = "host-passthrough"
+      lv.nested            = true
+    end
+  end
+end
