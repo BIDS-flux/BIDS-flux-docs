@@ -69,14 +69,18 @@ destroy:
 
 # Wipe everything `make destroy` leaves behind: the libvirt private network
 # (vagrant doesn't tear it down — re-up may complain about a stale subnet)
-# and project-local state (ssh_config, swarm token, run logs). The `-` prefix
-# on `sudo virsh` makes the commands non-fatal so re-running is idempotent
+# and project-local state (ssh_config, swarm token). The `-` prefix on
+# `sudo virsh` makes the commands non-fatal so re-running is idempotent
 # even when the network has already been removed (or never existed).
+#
+# Note: we deliberately do **not** rm log.txt / out.txt here. A common
+# usage is  `make clean-redeploy 2>&1 | tee out.txt`  — the rm would
+# unlink the file mid-run while tee still has it open, silently nuking
+# the log. Old logs are harmless; user can rm by hand if they want.
 cleanse: destroy
 	-sudo virsh net-destroy  bidsflux 2>/dev/null
 	-sudo virsh net-undefine bidsflux 2>/dev/null
 	rm -rf $(CACHE_DIR)
-	rm -f log.txt log-deploy.txt out.txt
 
 # One target for the full from-scratch cycle. Recursive `$(MAKE)` so each
 # step inherits PYINFRA_FLAGS and friends from the user's environment.
