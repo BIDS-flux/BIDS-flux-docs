@@ -25,7 +25,7 @@ help:
 	@echo "  deploy                   -- chain steps 1..4 (full deploy)"
 	@echo "  deploy-step1-prereqs     -- phase 1: prereqs on both hosts"
 	@echo "  deploy-step2-swarm-init  -- phase 2: swarm init on data"
-	@echo "  swarm-fetch-join         -- copy join command from data to $(CACHE_DIR)/"
+	@echo "  swarm-fetch-join         -- copy worker swarm token from data to $(CACHE_DIR)/swarm-token"
 	@echo "  deploy-step3-swarm-join  -- phase 3: join swarm on proc"
 	@echo "  deploy-step4-stack       -- phase 4: stack deploy + post on data"
 	@echo "  smoke                    -- curl health checks against forwarded ports"
@@ -78,9 +78,12 @@ deploy-step2-swarm-init: $(SSH_CONFIG)
 
 swarm-fetch-join:
 	mkdir -p $(CACHE_DIR)
-	$(VAGRANT) ssh $(DATA_NAME) -c "sudo cat /etc/bidsflux/swarm-join.sh" > $(CACHE_DIR)/swarm-join.sh
-	chmod 0644 $(CACHE_DIR)/swarm-join.sh
-	@echo "fetched $$(wc -l < $(CACHE_DIR)/swarm-join.sh) line join command"
+	$(VAGRANT) ssh $(DATA_NAME) -c "sudo cat /etc/bidsflux/swarm-token" > $(CACHE_DIR)/swarm-token
+	chmod 0644 $(CACHE_DIR)/swarm-token
+	@case "$$(cat $(CACHE_DIR)/swarm-token)" in \
+	    SWMTKN-*) echo "fetched swarm token (SWMTKN-…)";; \
+	    *) echo "ERROR: fetched content is not a swarm token" >&2; exit 1;; \
+	 esac
 
 deploy-step3-swarm-join: $(SSH_CONFIG)
 	$(PYINFRA) --sudo --limit $(PROC_NAME) $(INVENTORY) deploy_swarm_join.py

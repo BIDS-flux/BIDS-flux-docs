@@ -18,6 +18,17 @@ References:
   but no ``__getitem__``) at
   https://github.com/pyinfra-dev/pyinfra/blob/812a1499dfb2979848bf4603fe02017c6bf149e7/src/pyinfra/api/host.py#L48-L96
 
+Worker-join coordination
+------------------------
+
+The manager dumps **just the worker token** (one short line, no
+embedded shell) to ``/etc/bidsflux/swarm-token``. The Makefile fetches
+that into ``vagrant-demo/.cache/swarm-token``. ``join_worker`` reads it
+on the worker side and constructs the ``docker swarm join`` command in
+Python with explicit args — no ``printf``-into-file → ``sed`` →
+``eval`` chain that previously broke ``docker swarm join`` argument
+parsing.
+
 Shell-script discipline
 -----------------------
 
@@ -33,11 +44,9 @@ idioms we got bitten by in TODO Phase 0:
    command-substitution command failed, so a downstream ``[ -n "$TOKEN" ]``
    check is required to surface the failure. ``set -o pipefail`` would
    not help with this; only an explicit non-empty check does.
-3. ``sed | sh`` and other genuine pipes — pyinfra invokes commands
-   under ``/bin/sh`` (dash on Ubuntu), which does **not** support
-   ``set -o pipefail``. Where a real pipe is necessary, restructure
-   into ``VAR=$(sed …); [ -n "$VAR" ]; eval "$VAR"`` (or a temp file
-   intermediate) so a failure in the producer surfaces.
+3. No ``set -o pipefail`` — pyinfra runs commands under ``/bin/sh``
+   (dash on Ubuntu), which doesn't support that option. We avoid
+   genuine pipes in the swarm-coordination path entirely.
 
 Plus a post-condition check after ``docker swarm init`` that we are
 actually a manager (``Swarm.ControlAvailable == true``) — otherwise the
@@ -57,7 +66,7 @@ OVERLAY_GATEWAY = "192.11.0.2"
 OVERLAY_SUBNET = "192.11.0.0/16"
 
 CACHE_DIR = Path(__file__).resolve().parent.parent / ".cache"
-LOCAL_JOIN_FILE = CACHE_DIR / "swarm-join.sh"
+LOCAL_TOKEN_FILE = CACHE_DIR / "swarm-token"
 
 
 def init_manager() -> None:
@@ -68,11 +77,8 @@ def init_manager() -> None:
     server.shell(
         name="swarm init (idempotent, verified manager)",
         commands=[
-            # Single bash invocation so $STATE / $MGR persist.
             "set -eu; "
-            # Pre-flight: the advertise IP must actually be bound on a NIC,
-            # else `docker swarm init` "succeeds" but doesn't manage anything
-            # we'd recognise. This is the libvirt boot-timing trap.
+            # Pre-flight: advertise IP must be bound on a NIC.
             f"if ! ip -4 addr show | grep -q 'inet {advertise}/'; then "
             f"  echo 'ERROR: advertise-addr {advertise} not on any local interface' >&2; "
             "   ip -4 addr show >&2; "
@@ -83,7 +89,7 @@ def init_manager() -> None:
             "if [ \"$STATE\" != active ]; then "
             f"  docker swarm init --data-path-port {SWARM_DATA_PORT} --advertise-addr {advertise}; "
             "fi; "
-            # Post-condition: not just active, but a *manager*.
+            # Post-condition: must be a manager.
             "MGR=$(docker info --format '{{.Swarm.ControlAvailable}}'); "
             "echo \"ControlAvailable after init: $MGR\"; "
             "if [ \"$MGR\" != true ]; then "
@@ -102,16 +108,18 @@ def init_manager() -> None:
         _sudo=True,
     )
     server.shell(
-        name="dump worker join command (WORKER_IP placeholder)",
+        name="dump worker swarm-token",
         commands=[
             "set -eu; "
-            # `TOKEN=$(...)` returns 0 even on failure, so check non-empty.
             "TOKEN=$(docker swarm join-token worker -q); "
             "test -n \"$TOKEN\"; "
-            f"printf 'docker swarm join --token %s "
-            f"--advertise-addr WORKER_IP {advertise}:2377\\n' \"$TOKEN\" "
-            "> /etc/bidsflux/swarm-join.sh; "
-            "chmod 0644 /etc/bidsflux/swarm-join.sh",
+            "echo \"$TOKEN\" > /etc/bidsflux/swarm-token; "
+            "chmod 0644 /etc/bidsflux/swarm-token; "
+            # Sanity: docker swarm tokens look like SWMTKN-1-…
+            "case \"$TOKEN\" in "
+            "  SWMTKN-*) ;; "
+            "  *) echo \"ERROR: token does not look like SWMTKN-…: $TOKEN\" >&2; exit 1 ;; "
+            "esac",
         ],
         _sudo=True,
     )
@@ -130,19 +138,19 @@ def init_manager() -> None:
 
 
 def join_worker() -> None:
-    if not LOCAL_JOIN_FILE.exists():
+    if not LOCAL_TOKEN_FILE.exists():
         raise SystemExit(
-            f"Missing {LOCAL_JOIN_FILE}; run `make swarm-fetch-join` "
+            f"Missing {LOCAL_TOKEN_FILE}; run `make swarm-fetch-join` "
             "after the manager has been initialised."
         )
 
-    # Attribute access — see the init_manager() comment above.
     advertise = host.data.bidsflux_swarm_advertise_addr
+    manager = host.data.bidsflux_swarm_manager_addr
 
     files.put(
-        name="upload join script",
-        src=str(LOCAL_JOIN_FILE),
-        dest="/etc/bidsflux/swarm-join.sh",
+        name="upload swarm token",
+        src=str(LOCAL_TOKEN_FILE),
+        dest="/etc/bidsflux/swarm-token",
         mode="0644",
         _sudo=True,
     )
@@ -151,23 +159,36 @@ def join_worker() -> None:
         name="join swarm if not already (verified worker)",
         commands=[
             "set -eu; "
+            "STATE=$(docker info --format '{{.Swarm.LocalNodeState}}'); "
+            "echo \"swarm state before join: $STATE\"; "
+            "if [ \"$STATE\" = active ]; then echo 'already in swarm'; exit 0; fi; "
             f"if ! ip -4 addr show | grep -q 'inet {advertise}/'; then "
             f"  echo 'ERROR: advertise-addr {advertise} not on any local interface' >&2; "
             "   ip -4 addr show >&2; "
             "   exit 1; "
             "fi; "
-            "STATE=$(docker info --format '{{.Swarm.LocalNodeState}}'); "
-            "if [ \"$STATE\" = active ]; then "
-            "  echo 'already in swarm'; exit 0; "
+            # Quick reachability probe: TCP-connect to the manager swarm port.
+            # Use bash /dev/tcp pseudo-device via sh's `command -v bash` if
+            # available, else fall back to nc; if neither, just continue and
+            # let docker tell us.
+            f"if command -v nc >/dev/null 2>&1; then "
+            f"  if ! nc -z -w 3 {manager} 2377; then "
+            f"    echo 'ERROR: cannot reach manager {manager}:2377/tcp from this host' >&2; "
+            "     exit 1; "
+            "   fi; "
+            f"   echo 'reachability probe to {manager}:2377/tcp OK'; "
             "fi; "
-            # Restructured to avoid `sed | sh` — pyinfra runs commands under
-            # /bin/sh (dash on Ubuntu) which lacks `-o pipefail`, so we'd miss
-            # a sed failure. Read into a variable, assert non-empty, then exec.
-            f"JOIN_CMD=$(sed 's|WORKER_IP|{advertise}|' /etc/bidsflux/swarm-join.sh); "
-            "test -n \"$JOIN_CMD\"; "
-            "eval \"$JOIN_CMD\"; "
-            # Post-condition: we should now be active.
+            "TOKEN=$(cat /etc/bidsflux/swarm-token); "
+            "test -n \"$TOKEN\"; "
+            "case \"$TOKEN\" in "
+            "  SWMTKN-*) ;; "
+            "  *) echo \"ERROR: token does not look like SWMTKN-…: $TOKEN\" >&2; exit 1 ;; "
+            "esac; "
+            f"echo \"joining swarm: docker swarm join --token <redacted> --advertise-addr {advertise} {manager}:2377\"; "
+            f"docker swarm join --token \"$TOKEN\" --advertise-addr {advertise} {manager}:2377; "
+            # Post-condition: must be active after the join.
             "STATE=$(docker info --format '{{.Swarm.LocalNodeState}}'); "
+            "echo \"swarm state after join: $STATE\"; "
             "if [ \"$STATE\" != active ]; then "
             "  echo 'ERROR: swarm join apparently succeeded but node not active' >&2; "
             "  docker info --format '{{json .Swarm}}' >&2; "

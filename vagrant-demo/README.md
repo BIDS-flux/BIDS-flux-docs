@@ -44,7 +44,7 @@ make smoke               # curl health endpoints on the host
     1. deploy-step1-prereqs    (pyinfra against both VMs: docker, datalad, openssl)
     2. deploy-step2-swarm-init (pyinfra --limit data: swarm init + cpip_network)
     3. swarm-fetch-join        (Make target: vagrant ssh into data, dump
-                                /etc/bidsflux/swarm-join.sh into .cache/)
+                                /etc/bidsflux/swarm-token into .cache/)
     4. deploy-step3-swarm-join (pyinfra --limit proc: upload .cache/ file
                                 + docker swarm join)
     5. deploy-step4-stack      (pyinfra --limit data: stage upstream stack,
