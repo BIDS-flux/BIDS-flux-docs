@@ -93,8 +93,44 @@ Vagrant.configure("2") do |config|
 EOF
     SH
 
+  # Force kernel hostname to the FQDN. config.vm.hostname = "x.y.z" should
+  # do this, but vagrant-libvirt's hostname provisioner truncates at the
+  # first dot on some box layouts (we observed kernel hostname `itappcpipdp01`
+  # while /etc/hosts had the FQDN). Docker swarm reads the kernel hostname
+  # at daemon-start time and records it on the node, so the upstream calgary
+  # `node.hostname == itappcpipdp01.uc.ucalgary.ca` placement constraints
+  # never matched and every service stayed Pending.
+  #
+  # `run: "always"` runs the override on every `vagrant up`/`reload`. Restart
+  # docker (if already installed/running) so it picks up the new hostname
+  # before the next swarm init/join.
+  def force_fqdn(name, fqdn)
+    name.vm.provision "shell",
+      name: "force kernel hostname = #{fqdn}",
+      run: "always",
+      privileged: true,
+      inline: <<~SH
+        set -eu
+        TARGET="#{fqdn}"
+        CURRENT=$(hostname)
+        if [ "$CURRENT" != "$TARGET" ]; then
+          echo "force_fqdn: $CURRENT -> $TARGET"
+          hostnamectl set-hostname "$TARGET"
+          # hostnamectl already writes /etc/hostname, but be explicit.
+          printf '%s\\n' "$TARGET" > /etc/hostname
+          if systemctl is-active --quiet docker 2>/dev/null; then
+            echo "force_fqdn: restarting docker so swarm picks up new hostname"
+            systemctl restart docker
+          fi
+        else
+          echo "force_fqdn: hostname already $TARGET"
+        fi
+      SH
+  end
+
   config.vm.define "data", primary: true do |data|
     data.vm.hostname = DATA_HOST
+    force_fqdn(data, DATA_HOST)
     data.vm.network :private_network, ip: DATA_IP, libvirt__network_name: "bidsflux"
 
     data.vm.network :forwarded_port, guest: 443,  host: 8443, host_ip: "127.0.0.1"
@@ -116,6 +152,7 @@ EOF
 
   config.vm.define "proc" do |proc|
     proc.vm.hostname = PROC_HOST
+    force_fqdn(proc, PROC_HOST)
     proc.vm.network :private_network, ip: PROC_IP, libvirt__network_name: "bidsflux"
 
     proc.vm.provider :libvirt do |lv|
