@@ -85,13 +85,31 @@ def run() -> None:
         _sudo=True,
     )
 
-    # The calgary docker-compose.stack.yml volumes are rooted at /data — see
-    # vagrant-demo/sourcedata/stack/deploy/create_directory.sh. We pre-create
-    # the parent here; create_directory.sh fills in the leaves with the right
-    # ownership during the stack stage.
-    files.directory(
-        name="mkdir /data",
-        path="/data",
-        mode="0755",
+    # /data/* paths the upstream compose binds. We mkdir these on **both**
+    # VMs because:
+    #   - gitlab-runner is pinned to proc and binds /data/runner/{conf,certs,cache};
+    #     running deploy/create_directory.sh only on data left those missing.
+    #   - upstream's create_directory.sh makes /data/minio/backups but compose
+    #     binds /data/minio/data — tiny upstream gap; we cover both.
+    # `chmod go+w` matches what create_directory.sh does so non-root containers
+    # (gitlab-runner, mercure) can write.
+    server.shell(
+        name="mkdir /data/* (compose bind sources)",
+        commands=[
+            "set -eu; "
+            "mkdir -p "
+            "  /data/gitlab/data /data/gitlab/logs /data/gitlab/backups "
+            "  /data/gitlab/config/trusted-certs "
+            "  /data/minio/data /data/minio/backups "
+            "  /data/runner/conf /data/runner/certs /data/runner/cache "
+            "  /data/dicom_endpoint/dicom_data/tmp "
+            "  /data/mercure/db /data/mercure/data /data/mercure/config; "
+            "chmod -R go+w "
+            "  /data/gitlab/data /data/gitlab/logs /data/gitlab/backups "
+            "  /data/gitlab/config/trusted-certs "
+            "  /data/minio/backups "
+            "  /data/runner /data/dicom_endpoint/dicom_data/tmp "
+            "  /data/mercure",
+        ],
         _sudo=True,
     )

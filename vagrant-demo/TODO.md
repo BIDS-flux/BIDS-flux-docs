@@ -25,6 +25,15 @@ Fix plan (this commit):
 - [ ] Same `TOKEN=…` problem in `dump worker join command`. Use `set -o pipefail; TOKEN=$(docker swarm join-token worker -q) && printf …` so a join-token failure aborts.
 - [ ] Audit `tasks/stack.py` for the same anti-patterns (`||`, `$(…)` assignments, unchecked subshells).
 
+### Known residual Rejected services after this round
+
+These won't reach 1/1 in phase 0 — they need separate follow-ups:
+
+- **`cpip_gitlab-runner.1` (proc)** — needs `gitlab-runner-calgary:latest` image on proc; we currently only build it on data. Follow-up: either sync `deploy/Dockerfile-runner` + a bundle.crt to proc and `docker build` there, or `docker save` from data + `docker load` on proc via pyinfra `files.get`/`files.put`.
+- **`cpip_dicom_endpoint.1`** — needs `ITAPPCPIPDP01.uc.ucalgary.ca:5050/ni-dataops/containers/dicom_indexer:latest` from the GitLab container registry. The image gets built and pushed by the **CI pipelines in `containers/`** repo, which can only run after GitLab is up + bots are registered. Defer to post_install (see "GitLab Runner registration" backlog item).
+
+`cpip_gitlab-runner-dind`, `cpip_scratch`, `cpip_minio`, and `cpip_gitlab` itself should all reach 1/1 — those are what `wait for gitlab service 1/1` gates on.
+
 After phase 0 is green, before moving on:
 
 - [ ] Run `make smoke` — expect HTTP responses from GitLab and MinIO.

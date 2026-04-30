@@ -111,6 +111,46 @@ def deploy_on_manager() -> None:
         _sudo=True,
     )
 
+    # The compose interpolates $GITLAB_HOME/{data,logs,config} for the gitlab
+    # service. With GITLAB_HOME unset, $GITLAB_HOME/logs expands to /logs and
+    # the bind-mount fails ("bind source path does not exist: /logs"). Compose
+    # v2 reads .env from the project dir.
+    server.shell(
+        name="render .env for compose interpolation",
+        commands=[
+            "set -eu; "
+            f"cd {STACK_VM_PATH}; "
+            "cat > .env <<'EOF'\n"
+            "GITLAB_HOME=/data/gitlab\n"
+            "MINIO_HOME=/data/minio\n"
+            "EOF\n",
+        ],
+        _sudo=True,
+    )
+
+    # Build the two locally-tagged images the compose references but doesn't
+    # build itself: gitlab-runner-calgary (used by gitlab-runner-dind on data
+    # AND gitlab-runner on proc — proc-side builds happen separately) and
+    # scratch-for-setup (the post_gitlab_install bootstrap container, data only).
+    # Build context is `deploy/` (which contains the Dockerfiles + supporting
+    # files); we copy our seeded bundle.crt + post_gitlab_install.py in first.
+    server.shell(
+        name="build local images (gitlab-runner-calgary, scratch-for-setup)",
+        commands=[
+            "set -eu; "
+            f"cd {STACK_VM_PATH}/deploy; "
+            "cp ../secrets/bundle.crt ./bundle.crt; "
+            # cp post_gitlab_install.py — it's already in deploy/, so no-op.
+            "if ! docker image inspect gitlab-runner-calgary:latest >/dev/null 2>&1; then "
+            "  docker build -t gitlab-runner-calgary:latest -f Dockerfile-runner .; "
+            "fi; "
+            "if ! docker image inspect scratch-for-setup:latest >/dev/null 2>&1; then "
+            "  docker build -t scratch-for-setup:latest -f Dockerfile-scratch .; "
+            "fi",
+        ],
+        _sudo=True,
+    )
+
     server.shell(
         name=f"docker stack deploy {STACK_NAME}",
         commands=[
