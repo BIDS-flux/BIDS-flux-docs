@@ -3,7 +3,7 @@
 Software Stack Deployment
 ---------------------
 
-This page will go through how to get started with the sofware stack installation. We will break down the process into pre-requisites, local infrastructure, with two stages of configuration and deployment, and finally the centralized infrastructure.
+This page will go through how to get started with the software stack installation. We will break down the process into pre-requisites, local infrastructure, with two stages of configuration and deployment, and finally the centralized infrastructure.
 
 .. note:: 
 
@@ -36,7 +36,7 @@ Install ``DataLad`` in all the servers/VMs. Follow the official documentation to
 Local Infrastructure
 ^^^^^^^^^^^^^^^^^^^^
 
-Each local server/VM will need to have docker engine running which we will use to initalize a docker swarm. The recommended breakdown is to use two servers and divide the services as follows:
+Each local server/VM will need to have docker engine running which we will use to initialize a docker swarm. The recommended breakdown is to use two servers and divide the services as follows:
 
    #. Data Server:
 
@@ -71,11 +71,11 @@ Each local server/VM will need to have docker engine running which we will use t
 
     .. warning::
         
-        Be aware of the issues with docker swarm in a `VMWare virutal machine <https://portal.portainer.io/knowledge/known-issues-with-vmware>`_.
+        Be aware of the issues with docker swarm in a `VMWare virtual machine <https://portal.portainer.io/knowledge/known-issues-with-vmware>`_.
 
     .. note:: 
 
-        Make sure that your newtork is configured correctly and that the ``data`` and ``processing servers/VMs`` can communicate with each other on the required ports by docker https://docs.docker.com/engine/swarm/swarm-tutorial/#open-protocols-and-ports-between-the-hosts.
+        Make sure that your network is configured correctly and that the ``data`` and ``processing servers/VMs`` can communicate with each other on the required ports by docker https://docs.docker.com/engine/swarm/swarm-tutorial/#open-protocols-and-ports-between-the-hosts.
 
 
 #. Go into the worker node (``processing server``) and run the following command with the information obtained from the previous command.
@@ -84,7 +84,7 @@ Each local server/VM will need to have docker engine running which we will use t
 
         docker swarm join --token TOKEN --advertise-addr <IP-ADDRESS-OF-WORKER-1> <IP-ADDRESS-OF-MANAGER>:2377
 
-#. Create an attachable docker overlay network. This network will be used by all the services to securely communicate to eachother.
+#. Create an attachable docker overlay network. This network will be used by all the services to securely communicate to each other.
 
     .. code:: bash
 
@@ -99,7 +99,7 @@ Each local server/VM will need to have docker engine running which we will use t
 
     .. note:: 
 
-        You can also clone the following repositories to keep your repostiories up to date with following releases:
+        You can also clone the following repositories to keep your repositories up to date with following releases:
 
             .. code-block:: bash
 
@@ -162,14 +162,14 @@ Configuration Stage 1
         
     .. note::
 
-        You may have noticed that the mercure service is not included in the `` BIDSflux-stack.yml`` file, this is okay. Currently, ``Mercure`` needs to be installed using `docker-compose` as oposed to `docker swarm`, but don't worry, we will install it right after. 
+        You may have noticed that the mercure service is not included in the `` BIDSflux-stack.yml`` file, this is okay. Currently, ``Mercure`` needs to be installed using `docker-compose` as opposed to `docker swarm`, but don't worry, we will install it right after. 
 
 .. _local-stack-deployment-stage1:
 
 Stack Deployment Stage 1
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-#. One you have completed the initial configuration, we need to deploy de secrets for the docker-warm services by running the ``deploy/generate_secrets.sh``. This comand will create the secrets required for the deployment of the services.
+#. One you have completed the initial configuration, we need to deploy de secrets for the docker-warm services by running the ``deploy/generate_secrets.sh``. This command will create the secrets required for the deployment of the services.
 
     .. code-block:: bash
         
@@ -223,7 +223,7 @@ Stack Deployment Stage 1
 Configuration Stage 2
 ~~~~~~~~~~~~~~~~~~~~~
 
-#. Run the ``mercure-setup.sh`` script in preparation for the Mercure deployment, this script will create some of the required direcotries and asign the correct USERNAME and permissions for mercure to run properly.
+#. Run the ``mercure-setup.sh`` script in preparation for the Mercure deployment, this script will create some of the required directories and assign the correct USERNAME and permissions for mercure to run properly.
 
     .. code-block:: bash
 
@@ -301,7 +301,7 @@ Configuration Stage 2
         .. image:: img/runners.png
             :width: 600px
 
-    #. After successfully registering the GitLab Runners, you can run the script which will finalize the configuration of the local GitLab instace. This script will show you two tokens that you will need to store in a safe place. The first token is the ``GITLAB_BOT_TOKEN`` which will be used to push the data to the GitLab instance, and the second token is the ``BIDS_API_TOKEN`` which will be used to provide access to the data in the pipelines.
+    #. After successfully registering the GitLab Runners, you can run the script which will finalize the configuration of the local GitLab instance. This script will show you two tokens that you will need to store in a safe place. The first token is the ``GITLAB_BOT_TOKEN`` which will be used to push the data to the GitLab instance, and the second token is the ``BIDS_API_TOKEN`` which will be used to provide access to the data in the pipelines.
 
         .. code-block:: bash
 
@@ -395,7 +395,7 @@ Stack Deployment Stage 2
 
     .. note:: 
 
-        Alternatibly, you can check if the mercure services are runnning check the logs running:
+        Alternatibly, you can check if the mercure services are running check the logs running:
 
         .. code-block:: bash
 
@@ -463,7 +463,7 @@ Stack Deployment Stage 2
         #. CI_SERVER_HOST: The URL of the GitLab instance where the data will be pushed. Make sure to change the DOMAIN_NAME_PLACEHOLDER to the correct domain name.
         #. GITLAB_BOT_USERNAME: The username of the GitLab bot which should also be given access to the data being pushed. Make sure to change the DOMAIN_NAME_PLACEHOLDER to the correct domain name.
         #. GITLAB_BOT_EMAIL: The email of the GitLab bot which should also be given access to the data being pushed.
-        #. GITLAB_TOKEN: The token of the GitLab bot which will be used to push the data ``dicom_bot``. This toke was created when we ran the ``deploy/init_ni-dataops.py`` script. You were asked to safely store this token :ref:`local-configuration-stage2`.
+        #. GITLAB_TOKEN: The token of the GitLab bot which will be used to push the data ``dicom_bot``. This token was created when we ran the ``deploy/init_ni-dataops.py`` script. You were asked to safely store this token :ref:`local-configuration-stage2`.
         #. AWS_ACCESS_KEY_ID: The AWS access key ID for the S3 bucket where the data will be pushed. You were asked to safely store this token :ref:`local-stack-deployment-stage1` under ``s3_id``.
         #. AWS_SECRET_ACCESS_KEY: The AWS secret access key for the S3 bucket where the data will be pushed. You were asked to safely store this token :ref:`local-stack-deployment-stage1` under ``s3_secret``.
         #. S3_URL_PATTERN: The URL pattern for the S3 bucket where the data will be pushed to in ``MinIO``. Ideally the information used here should match the one used in the ``GITLAB_INDEXER_GROUP_TEMPLATE``.

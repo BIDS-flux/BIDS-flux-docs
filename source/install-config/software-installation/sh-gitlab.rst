@@ -40,7 +40,7 @@ Docker Swarm GitLab Installation
 
    .. warning::
       
-      Be aware of the issues with docker swarm in a `VMWare virutal machine <https://portal.portainer.io/knowledge/known-issues-with-vmware>`_.
+      Be aware of the issues with docker swarm in a `VMWare virtual machine <https://portal.portainer.io/knowledge/known-issues-with-vmware>`_.
 
 #. SSH into the worker node (processing server-2) and run the following command with the information obtained from the previous command.
 
@@ -133,7 +133,7 @@ Docker Swarm GitLab Installation
       cpip_network:
          external: true
 
-#. Do the modifications necesary to set your `hostname` and run the command:
+#. Do the modifications necessary to set your `hostname` and run the command:
 
    .. code:: 
 
@@ -145,7 +145,7 @@ Docker Swarm GitLab Installation
 
    .. note:: 
 
-      You can find information on how to change password using the terminal in `this disscusion <https://stackoverflow.com/questions/55747402/docker-gitlab-change-forgotten-root-password>`_.
+      You can find information on how to change password using the terminal in `this discussion <https://stackoverflow.com/questions/55747402/docker-gitlab-change-forgotten-root-password>`_.
 
          .. code:: ruby
 
@@ -193,7 +193,7 @@ Docker Swarm GitLab Installation
 
    .. warning::
       
-      Be aware of the issues with docker swarm in a `VMWare virutal machine <https://portal.portainer.io/knowledge/known-issues-with-vmware>`_.
+      Be aware of the issues with docker swarm in a `VMWare virtual machine <https://portal.portainer.io/knowledge/known-issues-with-vmware>`_.
 
 #. SSH into the worker node (processing server) and run the following command with the information obtained from the previous command.
 
@@ -214,7 +214,7 @@ Docker Swarm GitLab Installation
 
       If you are using ``self-signed certificates``, you might use the selfsigned-cert branch, for this branch custom docker images will need to be created before stack deployment.
 
-#. Create the necesary docker secrets.
+#. Create the necessary docker secrets.
 
     .. code-block:: bash
 
@@ -241,7 +241,7 @@ Docker Swarm GitLab Installation
       cpip_network:
          external: true
 
-#. Do the modifications necesary to set your `hostname` and run the command:
+#. Do the modifications necessary to set your `hostname` and run the command:
 
    .. code:: 
 
@@ -253,7 +253,7 @@ Docker Swarm GitLab Installation
 
    .. note:: 
 
-      You can find information on how to change password using the terminal in `this disscusion <https://stackoverflow.com/questions/55747402/docker-gitlab-change-forgotten-root-password>`_.
+      You can find information on how to change password using the terminal in `this discussion <https://stackoverflow.com/questions/55747402/docker-gitlab-change-forgotten-root-password>`_.
 
          .. code:: ruby
 
@@ -278,7 +278,7 @@ Docker Swarm GitLab Installation
 
 #. Follow the previous steps to :ref:`configure gitlab <gitlab_config>`.
 
-Debbugging
+Debugging
 ^^^^^^^^^^
 
 #. Allow a new ssh port in the system can be achieved. Follow `this post <https://stackoverflow.com/questions/11672525/centos-6-3-ssh-bind-to-port-xxx-on-0-0-0-0-failed-permission-denied>`_ for more information.
@@ -286,7 +286,7 @@ Debbugging
 
    .. code:: yaml
 
-      # All you need to do is add the following configurtion to the gitlab runners config in /etc/gitlab-runner/config.toml
+      # All you need to do is add the following configuration to the gitlab runners config in /etc/gitlab-runner/config.toml
       [[runners]]
       #....
       [runners.docker]
@@ -296,7 +296,7 @@ Debbugging
 Direct GitLab Installation
 --------------------------
 
-We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`_ for installing gitlab in centos/redhat 8, it also works for redhat 9. It is imporant to make the following considerations when following the steps.
+We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`_ for installing gitlab in centos/redhat 8, it also works for redhat 9. It is important to make the following considerations when following the steps.
 
 .. _creationofssl:
 
@@ -316,7 +316,7 @@ We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`
          openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/gitlab/ssl/cpip.ahs.ucalgary.ca.key -addext "subjectAltName = DNS:cpip.ahs.ucalgary.ca" -out /etc/ gitlab/ssl/cpip.ahs.ucalgary.ca.crt
 
 
-   #. Talk to whoever manages your network to have them add your new hostname (e.g., cpip.ahs.ucalgary.ca) to the DNS. Wheter or not this is important will depend on who will need to have access to gitlab's interface.
+   #. Talk to whoever manages your network to have them add your new hostname (e.g., cpip.ahs.ucalgary.ca) to the DNS. Whether or not this is important will depend on who will need to have access to gitlab's interface.
 
    #. Follow these `instructions 1 <https://docs.gitlab.com/omnibus/settings/ssl/index.html>`_ or `instructions 2 <https://computingforgeeks.com/how-to-secure-gitlab-server-with-ssl-certificate/?expand_article=1>`_ and reconfigure gitlab to accept self-signed certificates.
 
@@ -352,7 +352,7 @@ We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`
                   "insecure-registries" : [ "cpip.ahs.ucalgary.ca","cpip.ahs.ucalgary.ca:5050" ]
                   }
 
-         b. You also need to make sure that your system trusts the created certificate by following `these instructions <https://stackoverflow.com/questions/22509271/import-self-signed-certificate-in-redhat>`_. These are specific o RedHat 8 follow a simillar guide for your OS.
+         b. You also need to make sure that your system trusts the created certificate by following `these instructions <https://stackoverflow.com/questions/22509271/import-self-signed-certificate-in-redhat>`_. These are specific o RedHat 8 follow a similar guide for your OS.
 
             .. code-block:: bash
 
@@ -361,7 +361,7 @@ We follow this `installation guide <https://about.gitlab.com/install/#centos-7>`
 
       .. note:: 
 
-         You can find information on how to change password using the terminal in `this disscusion <https://stackoverflow.com/questions/55747402/docker-gitlab-change-forgotten-root-password>`_.
+         You can find information on how to change password using the terminal in `this discussion <https://stackoverflow.com/questions/55747402/docker-gitlab-change-forgotten-root-password>`_.
 
             .. code:: ruby
 
@@ -440,7 +440,7 @@ After installation, there are additional configurations required before the pipe
 
 
 
-Debbugging
+Debugging
 ----------
 
 #. Allow a new ssh port in the system can be achieved. Follow `this post <https://stackoverflow.com/questions/11672525/centos-6-3-ssh-bind-to-port-xxx-on-0-0-0-0-failed-permission-denied>`_ for more information.
@@ -448,7 +448,7 @@ Debbugging
 
    .. code:: yaml
 
-      # All you need to do is add the following configurtion to the gitlab runners config in /etc/gitlab-runner/config.toml
+      # All you need to do is add the following configuration to the gitlab runners config in /etc/gitlab-runner/config.toml
       [[runners]]
       #....
       [runners.docker]

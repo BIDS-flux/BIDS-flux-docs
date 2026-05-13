@@ -3,7 +3,7 @@
 Access to Data
 ==============
 
-Each site will host the data collected locally, howerver the collective pooled data will be available from the CPIP Green server, ask your local Data Manager how to best access data.
+Each site will host the data collected locally, however the collective pooled data will be available from the CPIP Green server, ask your local Data Manager how to best access data.
 
 Ethics
 ------

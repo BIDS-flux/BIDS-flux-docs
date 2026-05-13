@@ -42,7 +42,7 @@ For Calgary we will use a docker swarm deployment.
 Old way of doing this
 ^^^^^^^^^^^^^^^^^^^^^
 
-#. Provisionally, the folowing instructions will guide on the creation of the requided images and the registration of the instance wide gitlab-runners.
+#. Provisionally, the following instructions will guide on the creation of the requided images and the registration of the instance wide gitlab-runners.
 
    Either clone the repository: `https://gitlab.com/cal_cpip/calgary-servers.git <https://gitlab.com/cal_cpip/calgary-servers.git>`_ and run the following command:
 
@@ -120,7 +120,7 @@ Old way of doing this
 
       .. important:: 
 
-         Don't forget to add the self-signed certificates as volumes to the runners when you are registering them. This involves creating the certifiates ``For GitLab and for MinIO`` and copying them both in a single file called ``/etc/ssl/stack-certs/cpip.crt``.
+         Don't forget to add the self-signed certificates as volumes to the runners when you are registering them. This involves creating the certificates ``For GitLab and for MinIO`` and copying them both in a single file called ``/etc/ssl/stack-certs/cpip.crt``.
 
       .. note::
 
@@ -134,7 +134,7 @@ Old way of doing this
 
       c. For pre-processing; tag = preproc
 
-   #. Your new gitlab runner's configuration should have been added to the /etc/gitlab-runner/config.toml from which we will need to follow this `documentation <https://docs.gitlab.com/ee/administration/packages/container_registry.html#using-self-signed-certificates-with-container-registry>`_ in order to make sure that the self signed certificates are included to the docker in docker. Basically, you are need to make sure your runner's configuration contains ``privileged = false`` and the volume ``/var/run/docker.sock:/var/run/docker.sock`` to mount the docker deamon into the docker.
+   #. Your new gitlab runner's configuration should have been added to the /etc/gitlab-runner/config.toml from which we will need to follow this `documentation <https://docs.gitlab.com/ee/administration/packages/container_registry.html#using-self-signed-certificates-with-container-registry>`_ in order to make sure that the self signed certificates are included to the docker in docker. Basically, you are need to make sure your runner's configuration contains ``privileged = false`` and the volume ``/var/run/docker.sock:/var/run/docker.sock`` to mount the docker daemon into the docker.
 
       .. code-block:: toml
          
@@ -190,7 +190,7 @@ Old way of doing this
 
          .. code:: yaml
 
-            # All you need to do is add the following configurtion to the gitlab runners config in /etc/gitlab-runner/config.toml
+            # All you need to do is add the following configuration to the gitlab runners config in /etc/gitlab-runner/config.toml
             [[runners]]
             #....
             [runners.docker]
@@ -201,17 +201,17 @@ Old way of doing this
 
 .. _debbugg_it:
 
-Debbugging iteratively inside the runners.
+Debugging iteratively inside the runners.
 ------------------------------------------
 
-There is a couple of ways in which you can achieve this. For both option, you will need to include sleep statements into de jobs given that gitlab-ci jobs do not continue running after they finish. So, you will need to determine the correct place in order to pause before debbugging.
+There is a couple of ways in which you can achieve this. For both option, you will need to include sleep statements into de jobs given that gitlab-ci jobs do not continue running after they finish. So, you will need to determine the correct place in order to pause before debugging.
    .. code:: 
 
       - sleep 1200
 
 #. **For the first option** 
 
-   Independent configurations need to be made for both the ``gitlab-runner config file`` and ``self-hosted GitLab`` according to the `oficial documentation. <https://docs.gitlab.com/ee/ci/interactive_web_terminal/>`_
+   Independent configurations need to be made for both the ``gitlab-runner config file`` and ``self-hosted GitLab`` according to the `official documentation. <https://docs.gitlab.com/ee/ci/interactive_web_terminal/>`_
 
    The ``[session_server]`` section of the /etc/gitlab-runner/config.toml file needs to be modified to include the following.
 
@@ -240,7 +240,7 @@ There is a couple of ways in which you can achieve this. For both option, you wi
 
          The ``--insecure`` is required in order to work with **self-signed certificates**
 
-   After doing these, you should be able to see a button that says debbug at the top right job window in the GitLab console. By clicking this button it should take you to the debbugging terminal where you can debbug your pipeline.
+   After doing these, you should be able to see a button that says debug at the top right job window in the GitLab console. By clicking this button it should take you to the debugging terminal where you can debug your pipeline.
 
       .. figure:: ../../_static/infographics/interactive_web_terminal_running_job.png
          :width: 600px 
@@ -253,7 +253,7 @@ There is a couple of ways in which you can achieve this. For both option, you wi
 
       .. note:: 
 
-         You should be able to locate the name of the container directly from the debbugging window in the GitLab console.
+         You should be able to locate the name of the container directly from the debugging window in the GitLab console.
 
             This is an example of how the name can look like `runner-uxmeaw9qq-project-180-concurrent-0-ce63e7005eee31ef-build`
    
@@ -263,4 +263,4 @@ There is a couple of ways in which you can achieve this. For both option, you wi
 
          sudo docker exec -it runner-uxmeaw9qq-project-180-concurrent-0-ce63e7005eee31ef-build /bin/bash
 
-   Once you have logged into the container, find the folder where your job was being run, usually ``/builds/**/**``, and happy debbugging.
+   Once you have logged into the container, find the folder where your job was being run, usually ``/builds/**/**``, and happy debugging.
