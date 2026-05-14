@@ -1,0 +1,16 @@
+[submodule "vagrant-demo/sourcedata/stack"]
+	path = vagrant-demo/sourcedata/stack
+	url = https://gitlab.unf-montreal.ca/ni-dataops/stack.git
+	branch = calgary
+[submodule "vagrant-demo/sourcedata/containers"]
+	path = vagrant-demo/sourcedata/containers
+	url = https://gitlab.unf-montreal.ca/ni-dataops/containers.git
+	branch = calgary
+[submodule "vagrant-demo/sourcedata/ci-pipelines"]
+	path = vagrant-demo/sourcedata/ci-pipelines
+	url = https://gitlab.unf-montreal.ca/ni-dataops/ci-pipelines.git
+	branch = calgary
+[submodule "vagrant-demo/sourcedata/bids-containers"]
+	path = vagrant-demo/sourcedata/bids-containers
+	url = https://gitlab.unf-montreal.ca/ni-dataops/bids-containers.git
+	branch = main
